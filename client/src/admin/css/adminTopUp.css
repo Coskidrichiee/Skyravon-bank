@@ -1,0 +1,1058 @@
+
+/* =========================================
+   RICHIEE BANK - ADMIN TOP UP
+========================================= */
+
+.rb-topup {
+    width: 100%;
+    min-height: 100vh;
+    padding: 30px;
+    background: #f5f7fb;
+    color: #17243a;
+    font-family: Inter, Arial, sans-serif;
+    box-sizing: border-box;
+}
+
+.rb-topup *,
+.rb-topup *::before,
+.rb-topup *::after {
+    box-sizing: border-box;
+}
+
+.rb-topup button,
+.rb-topup input,
+.rb-topup select {
+    font: inherit;
+}
+
+/* HEADER */
+
+.rb-topup-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    margin-bottom: 28px;
+}
+
+.rb-breadcrumb {
+    color: #8793a7;
+    font-size: 12px;
+    margin-bottom: 12px;
+}
+
+.rb-breadcrumb span {
+    margin: 0 8px;
+}
+
+.rb-topup-header h1 {
+    margin: 0;
+    font-size: 29px;
+    font-weight: 800;
+    letter-spacing: -0.8px;
+    color: #15243d;
+}
+
+.rb-topup-header p {
+    color: #8490a3;
+    font-size: 14px;
+    margin: 9px 0 0;
+}
+
+.rb-refresh-button {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    padding: 12px 17px;
+    border: 1px solid #dce4ef;
+    border-radius: 10px;
+    background: white;
+    color: #263a5b;
+    font-weight: 650;
+    cursor: pointer;
+    transition: .2s;
+}
+
+.rb-refresh-button:hover {
+    background: #f0f5ff;
+    border-color: #2563eb;
+}
+
+.rb-refresh-button span {
+    font-size: 20px;
+}
+
+.rb-refresh-button:disabled {
+    opacity: .6;
+    cursor: not-allowed;
+}
+
+/* ALERT */
+
+.rb-alert {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 15px 17px;
+    border-radius: 11px;
+    margin-bottom: 22px;
+    font-size: 14px;
+}
+
+.rb-alert.success {
+    background: #eafaf1;
+    color: #167447;
+    border: 1px solid #c7f0d8;
+}
+
+.rb-alert.error {
+    background: #fff0f0;
+    color: #b42318;
+    border: 1px solid #ffd1d1;
+}
+
+.rb-alert > span {
+    font-weight: 900;
+}
+
+.rb-alert button {
+    margin-left: auto;
+    border: 0;
+    background: transparent;
+    color: inherit;
+    font-size: 22px;
+    cursor: pointer;
+}
+
+/* OVERVIEW */
+
+.rb-topup-overview {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 18px;
+    margin-bottom: 25px;
+}
+
+.rb-overview-card {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 23px;
+    border: 1px solid #e9eef5;
+    border-radius: 15px;
+    background: #fff;
+    box-shadow: 0 5px 18px rgba(20, 38, 70, .035);
+}
+
+.rb-overview-icon {
+    width: 51px;
+    height: 51px;
+    flex-shrink: 0;
+    display: grid;
+    place-items: center;
+    border-radius: 14px;
+    font-size: 25px;
+    font-weight: 800;
+}
+
+.rb-overview-icon.blue {
+    background: #eaf1ff;
+    color: #2563eb;
+}
+
+.rb-overview-icon.green {
+    background: #e6f8ef;
+    color: #16a36a;
+}
+
+.rb-overview-icon.purple {
+    background: #f2eaff;
+    color: #8052d6;
+}
+
+.rb-overview-card span,
+.rb-overview-card small {
+    display: block;
+    color: #8995a8;
+    font-size: 12px;
+}
+
+.rb-overview-card strong {
+    display: block;
+    margin: 5px 0;
+    color: #192b46;
+    font-size: 23px;
+    font-weight: 800;
+}
+
+/* MAIN GRID */
+
+.rb-topup-main {
+    display: grid;
+    grid-template-columns: minmax(0, 1.7fr) minmax(270px, .8fr);
+    gap: 22px;
+    align-items: start;
+    margin-bottom: 25px;
+}
+
+/* FUNDING CARD */
+
+.rb-funding-card,
+.rb-funding-info,
+.rb-history-card {
+    background: #fff;
+    border: 1px solid #e8edf4;
+    border-radius: 17px;
+    box-shadow: 0 5px 20px rgba(20, 38, 70, .035);
+}
+
+.rb-funding-card {
+    padding: 28px;
+}
+
+.rb-section-heading {
+    display: flex;
+    justify-content: space-between;
+    gap: 15px;
+    align-items: flex-start;
+    padding-bottom: 24px;
+    border-bottom: 1px solid #edf1f6;
+    margin-bottom: 25px;
+}
+
+.rb-section-label {
+    display: block;
+    color: #2563eb;
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 1.2px;
+    margin-bottom: 9px;
+}
+
+.rb-section-heading h2,
+.rb-history-heading h2 {
+    margin: 0;
+    color: #192b46;
+    font-size: 20px;
+    font-weight: 800;
+}
+
+.rb-section-heading p,
+.rb-history-heading p {
+    color: #8a96a8;
+    font-size: 13px;
+    margin: 8px 0 0;
+    line-height: 1.6;
+}
+
+.rb-heading-icon {
+    width: 48px;
+    height: 48px;
+    display: grid;
+    place-items: center;
+    border-radius: 13px;
+    background: #edf3ff;
+    color: #2563eb;
+    font-size: 22px;
+    font-weight: 800;
+}
+
+/* FORM */
+
+.rb-form-group {
+    margin-bottom: 21px;
+}
+
+.rb-form-group label {
+    display: block;
+    margin-bottom: 9px;
+    color: #35445b;
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.rb-search-box {
+    position: relative;
+}
+
+.rb-search-box > span {
+    position: absolute;
+    left: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 22px;
+    color: #91a0b4;
+}
+
+.rb-search-box input,
+.rb-form-group select {
+    width: 100%;
+    height: 49px;
+    padding: 0 15px;
+    border: 1px solid #dfe6ef;
+    border-radius: 9px;
+    background: #fff;
+    color: #263750;
+    font-size: 13px;
+    outline: none;
+    transition: .2s;
+}
+
+.rb-search-box input {
+    padding-left: 45px;
+}
+
+.rb-search-box input:focus,
+.rb-form-group select:focus {
+    border-color: #3977f6;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, .09);
+}
+
+.rb-search-box input::placeholder {
+    color: #a4afbf;
+}
+
+.rb-form-group select:disabled {
+    background: #f4f6fa;
+    cursor: not-allowed;
+}
+
+.rb-field-hint {
+    display: block;
+    margin-top: 8px;
+    color: #8c98aa;
+    font-size: 12px;
+}
+
+/* CUSTOMER PANEL */
+
+.rb-customer-panel {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 17px;
+    border: 1px solid #dce8ff;
+    border-radius: 12px;
+    background: #f7faff;
+    margin: 22px 0;
+}
+
+.rb-customer-avatar {
+    width: 48px;
+    height: 48px;
+    flex-shrink: 0;
+    display: grid;
+    place-items: center;
+    border-radius: 50%;
+    background: #2563eb;
+    color: white;
+    font-size: 19px;
+    font-weight: 800;
+}
+
+.rb-customer-details {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.rb-customer-details > span {
+    color: #7c8da8;
+    font-size: 9px;
+    font-weight: 800;
+    letter-spacing: 1px;
+}
+
+.rb-customer-details strong {
+    color: #243650;
+    font-size: 13px;
+}
+
+.rb-customer-details small {
+    color: #8a98aa;
+    font-size: 11px;
+    overflow-wrap: anywhere;
+}
+
+.rb-customer-balance {
+    margin-left: auto;
+    text-align: right;
+}
+
+.rb-customer-balance span {
+    display: block;
+    color: #8a96a8;
+    font-size: 10px;
+    margin-bottom: 6px;
+}
+
+.rb-customer-balance strong {
+    color: #1c3458;
+    font-size: 15px;
+    white-space: nowrap;
+}
+
+/* AMOUNT */
+
+.rb-amount-input {
+    display: flex;
+    align-items: center;
+    height: 62px;
+    border: 1px solid #dfe6ef;
+    border-radius: 10px;
+    overflow: hidden;
+    transition: .2s;
+}
+
+.rb-amount-input:focus-within {
+    border-color: #3977f6;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, .09);
+}
+
+.rb-amount-input > span {
+    padding-left: 17px;
+    color: #2563eb;
+    font-size: 23px;
+    font-weight: 800;
+}
+
+.rb-amount-input input {
+    width: 100%;
+    min-width: 0;
+    height: 100%;
+    padding: 0 13px;
+    border: 0;
+    outline: 0;
+    background: transparent;
+    color: #172b49;
+    font-size: 25px;
+    font-weight: 750;
+}
+
+.rb-amount-input input::-webkit-inner-spin-button,
+.rb-amount-input input::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+.rb-amount-input input[type="number"] {
+    appearance: textfield;
+    -moz-appearance: textfield;
+}
+
+.rb-amount-input small {
+    padding: 0 17px;
+    color: #8b98aa;
+    font-size: 11px;
+    font-weight: 800;
+}
+
+/* QUICK AMOUNTS */
+
+.rb-quick-amounts {
+    margin: 17px 0 24px;
+}
+
+.rb-quick-amounts > span {
+    display: block;
+    margin-bottom: 11px;
+    color: #8290a4;
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.rb-quick-amounts > div {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 9px;
+}
+
+.rb-quick-amounts button {
+    padding: 9px 13px;
+    border: 1px solid #e0e7f1;
+    border-radius: 8px;
+    background: white;
+    color: #52637c;
+    font-size: 11px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: .2s;
+}
+
+.rb-quick-amounts button:hover,
+.rb-quick-amounts button.active {
+    border-color: #2563eb;
+    background: #edf4ff;
+    color: #2563eb;
+}
+
+/* BALANCE PREVIEW */
+
+.rb-balance-preview {
+    padding: 18px;
+    margin-bottom: 21px;
+    border: 1px solid #e1eafa;
+    border-radius: 11px;
+    background: #f7faff;
+}
+
+.rb-balance-preview > div {
+    display: flex;
+    justify-content: space-between;
+    gap: 15px;
+    margin-bottom: 13px;
+}
+
+.rb-balance-preview span {
+    color: #7e8ba0;
+    font-size: 12px;
+}
+
+.rb-balance-preview strong {
+    color: #334660;
+    font-size: 12px;
+}
+
+.rb-credit-value {
+    color: #15945d !important;
+}
+
+.rb-balance-preview .rb-preview-total {
+    padding-top: 14px;
+    border-top: 1px dashed #d7e1f0;
+    margin: 0;
+}
+
+.rb-preview-total strong {
+    color: #1d4ed8;
+    font-size: 17px;
+    font-weight: 800;
+}
+
+/* SUBMIT */
+
+.rb-submit-button {
+    width: 100%;
+    min-height: 51px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    padding: 13px 20px;
+    border: 0;
+    border-radius: 9px;
+    background: #2059d6;
+    color: white;
+    font-size: 13px;
+    font-weight: 750;
+    cursor: pointer;
+    transition: .2s;
+}
+
+.rb-submit-button:hover:not(:disabled) {
+    background: #1748b4;
+    box-shadow: 0 7px 16px rgba(37, 99, 235, .2);
+    transform: translateY(-1px);
+}
+
+.rb-submit-button:disabled {
+    opacity: .5;
+    cursor: not-allowed;
+}
+
+.rb-submit-button span {
+    font-size: 19px;
+}
+
+.rb-secure-note {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 17px;
+    color: #929eb0;
+    font-size: 10px;
+    text-align: center;
+}
+
+.rb-secure-note span {
+    color: #16a36a;
+}
+
+/* SIDEBAR */
+
+.rb-topup-sidebar {
+    display: flex;
+    flex-direction: column;
+    gap: 17px;
+}
+
+.rb-funding-info {
+    padding: 25px;
+    background: linear-gradient(145deg, #102a55, #174a96);
+    color: white;
+    border: none;
+}
+
+.rb-info-icon {
+    width: 48px;
+    height: 48px;
+    display: grid;
+    place-items: center;
+    margin-bottom: 25px;
+    border: 1px solid rgba(255,255,255,.22);
+    border-radius: 13px;
+    background: rgba(255,255,255,.12);
+    color: white;
+    font-size: 23px;
+    font-weight: 800;
+}
+
+.rb-funding-info .rb-section-label {
+    color: #9fc1ff;
+}
+
+.rb-funding-info h2 {
+    margin: 0;
+    color: white;
+    font-size: 23px;
+}
+
+.rb-funding-info > p {
+    margin: 11px 0 22px;
+    color: #c5d6f1;
+    font-size: 12px;
+    line-height: 1.8;
+}
+
+.rb-info-divider {
+    height: 1px;
+    margin-bottom: 18px;
+    background: rgba(255,255,255,.16);
+}
+
+.rb-info-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 16px;
+    font-size: 11px;
+}
+
+.rb-info-row span {
+    color: #b6c9e6;
+}
+
+.rb-info-row strong {
+    color: white;
+    text-align: right;
+}
+
+.rb-security-card {
+    display: flex;
+    gap: 13px;
+    padding: 19px;
+    border: 1px solid #e5edf8;
+    border-radius: 13px;
+    background: white;
+}
+
+.rb-security-icon {
+    width: 34px;
+    height: 34px;
+    flex-shrink: 0;
+    display: grid;
+    place-items: center;
+    border-radius: 50%;
+    background: #e5f8ed;
+    color: #15945d;
+    font-weight: 900;
+}
+
+.rb-security-card strong {
+    color: #2b405d;
+    font-size: 12px;
+}
+
+.rb-security-card p {
+    margin: 7px 0 0;
+    color: #8794a7;
+    font-size: 11px;
+    line-height: 1.7;
+}
+
+/* HISTORY */
+
+.rb-history-card {
+    padding: 25px;
+}
+
+.rb-history-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 15px;
+    margin-bottom: 23px;
+}
+
+.rb-history-count {
+    padding: 8px 12px;
+    border-radius: 20px;
+    background: #edf3ff;
+    color: #2563eb;
+    font-size: 11px;
+    font-weight: 750;
+    white-space: nowrap;
+}
+
+.rb-table-scroll {
+    width: 100%;
+    overflow-x: auto;
+}
+
+.rb-history-table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+    white-space: nowrap;
+}
+
+.rb-history-table th {
+    padding: 14px 13px;
+    border-bottom: 1px solid #e9eef5;
+    background: #f8faff;
+    color: #8b98aa;
+    font-size: 10px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: .5px;
+}
+
+.rb-history-table td {
+    padding: 16px 13px;
+    border-bottom: 1px solid #eff2f6;
+    color: #52637a;
+    font-size: 11px;
+}
+
+.rb-history-table tbody tr:last-child td {
+    border-bottom: 0;
+}
+
+.rb-table-customer {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.rb-table-customer > div {
+    width: 34px;
+    height: 34px;
+    display: grid;
+    place-items: center;
+    border-radius: 50%;
+    background: #edf3ff;
+    color: #2563eb;
+    font-weight: 800;
+}
+
+.rb-table-customer span {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.rb-table-customer strong {
+    color: #273b59;
+    font-size: 11px;
+}
+
+.rb-table-customer small {
+    color: #98a3b3;
+    font-size: 10px;
+}
+
+.rb-reference {
+    color: #71819a !important;
+}
+
+.rb-status-success {
+    display: inline-block;
+    padding: 6px 9px;
+    border-radius: 20px;
+    background: #e9f9f0;
+    color: #168452;
+    font-size: 10px;
+    font-weight: 750;
+}
+
+.rb-empty-history {
+    height: 175px;
+    text-align: center !important;
+    white-space: normal;
+}
+
+.rb-empty-history > * {
+    display: block;
+    margin: 6px auto;
+}
+
+.rb-empty-icon {
+    width: 38px;
+    height: 38px;
+    display: grid !important;
+    place-items: center;
+    border-radius: 50%;
+    background: #edf3ff;
+    color: #2563eb;
+    font-size: 20px;
+}
+
+.rb-empty-history strong {
+    color: #43536b;
+    font-size: 12px;
+}
+
+.rb-empty-history span {
+    color: #99a4b3;
+    font-size: 11px;
+}
+
+/* CONFIRMATION MODAL */
+
+.rb-modal-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    background: rgba(9, 22, 43, .62);
+    backdrop-filter: blur(4px);
+}
+
+.rb-confirm-modal {
+    width: 100%;
+    max-width: 440px;
+    padding: 30px;
+    border-radius: 17px;
+    background: white;
+    box-shadow: 0 25px 70px rgba(0,0,0,.2);
+    animation: rbModalIn .2s ease-out;
+}
+
+@keyframes rbModalIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px) scale(.98);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+.rb-confirm-icon {
+    width: 55px;
+    height: 55px;
+    display: grid;
+    place-items: center;
+    margin-bottom: 18px;
+    border-radius: 15px;
+    background: #eaf1ff;
+    color: #2563eb;
+    font-size: 25px;
+    font-weight: 800;
+}
+
+.rb-confirm-modal h2 {
+    margin: 0;
+    color: #1d304e;
+    font-size: 21px;
+}
+
+.rb-confirm-modal > p {
+    margin: 9px 0 22px;
+    color: #8793a5;
+    font-size: 12px;
+    line-height: 1.6;
+}
+
+.rb-confirm-details {
+    padding: 17px;
+    border: 1px solid #e8eef7;
+    border-radius: 11px;
+    background: #f8faff;
+}
+
+.rb-confirm-details > div {
+    display: flex;
+    justify-content: space-between;
+    gap: 15px;
+    margin-bottom: 15px;
+    font-size: 11px;
+}
+
+.rb-confirm-details > div:last-child {
+    margin: 0;
+    padding-top: 14px;
+    border-top: 1px solid #e3eaf4;
+}
+
+.rb-confirm-details span {
+    color: #8491a4;
+}
+
+.rb-confirm-details strong {
+    color: #263b5a;
+    text-align: right;
+    overflow-wrap: anywhere;
+}
+
+.rb-confirm-actions {
+    display: flex;
+    gap: 12px;
+    margin-top: 22px;
+}
+
+.rb-confirm-actions button {
+    flex: 1;
+    min-height: 45px;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 750;
+    cursor: pointer;
+}
+
+.rb-cancel-button {
+    border: 1px solid #dce4ef;
+    background: white;
+    color: #52637a;
+}
+
+.rb-confirm-button {
+    border: 0;
+    background: #2059d6;
+    color: white;
+}
+
+.rb-confirm-actions button:disabled {
+    opacity: .6;
+    cursor: not-allowed;
+}
+
+/* TABLET */
+
+@media (max-width: 1050px) {
+    .rb-topup-main {
+        grid-template-columns: 1fr;
+    }
+
+    .rb-topup-sidebar {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        align-items: stretch;
+    }
+}
+
+/* MOBILE */
+
+@media (max-width: 700px) {
+    .rb-topup {
+        padding: 18px 14px;
+    }
+
+    .rb-topup-header {
+        align-items: flex-start;
+    }
+
+    .rb-topup-header h1 {
+        font-size: 23px;
+    }
+
+    .rb-topup-header p {
+        font-size: 12px;
+        line-height: 1.6;
+    }
+
+    .rb-refresh-button {
+        padding: 10px;
+        font-size: 11px;
+    }
+
+    .rb-topup-overview {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+
+    .rb-overview-card {
+        padding: 17px;
+    }
+
+    .rb-funding-card,
+    .rb-history-card {
+        padding: 19px 15px;
+    }
+
+    .rb-section-heading h2,
+    .rb-history-heading h2 {
+        font-size: 18px;
+    }
+
+    .rb-customer-panel {
+        flex-wrap: wrap;
+    }
+
+    .rb-customer-balance {
+        width: 100%;
+        margin: 5px 0 0;
+        padding-top: 12px;
+        border-top: 1px solid #e2eafa;
+        text-align: left;
+    }
+
+    .rb-topup-sidebar {
+        display: flex;
+    }
+
+    .rb-history-heading {
+        align-items: flex-start;
+    }
+
+    .rb-history-count {
+        font-size: 10px;
+    }
+
+    .rb-confirm-modal {
+        padding: 23px 18px;
+    }
+}
+
+@media (max-width: 420px) {
+    .rb-topup-header {
+        flex-direction: column;
+    }
+
+    .rb-refresh-button {
+        align-self: flex-start;
+    }
+
+    .rb-quick-amounts button {
+        padding: 8px 10px;
+        font-size: 10px;
+    }
+
+    .rb-amount-input input {
+        font-size: 21px;
+    }
+
+    .rb-balance-preview > div {
+        flex-direction: column;
+        gap: 5px;
+    }
+
+    .rb-confirm-actions {
+        flex-direction: column;
+    }
+}
