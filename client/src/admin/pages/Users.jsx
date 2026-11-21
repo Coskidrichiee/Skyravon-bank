@@ -1,8 +1,5 @@
-import {
-    useEffect,
-    useState
-} from "react";
 
+import { useEffect, useState, useCallback } from "react";
 import axios from "axios";
 
 import {
@@ -10,470 +7,383 @@ import {
     FaSearch,
     FaEdit,
     FaTrash,
-    FaEye
+    FaEye,
+    FaUsers,
+    FaSyncAlt,
+    FaWallet,
+    FaUserCheck
 } from "react-icons/fa";
 
+import { Link, useNavigate } from "react-router-dom";
 import "../css/users.css";
 
-import { Link } from "react-router-dom";
-import { useNavigate } from "react-router-dom";
-
+const API_BASE_URL =
+    import.meta.env.VITE_API_URL || "http://localhost:5000";
 
 function Users() {
-
-
-    const [users,setUsers] =
-        useState([]);
-
-
-    const [loading,setLoading] =
-        useState(true);
-
-
-    const [search,setSearch] =
-        useState("");
+    const [users, setUsers] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [search, setSearch] = useState("");
+    const [deletingId, setDeletingId] = useState(null);
+    const [error, setError] = useState("");
 
     const navigate = useNavigate();
 
+    const fetchUsers = useCallback(async () => {
+        try {
+            setError("");
 
-
-    // ==========================
-    // LOAD USERS
-    // ==========================
-
-    useEffect(()=>{
-
-        fetchUsers();
-
-    },[]);
-
-
-
-    const fetchUsers = async()=>{
-
-
-        try{
-
-
-            const response =
-                await axios.get(
-                    "http://localhost:5000/api/admin/users"
-                );
-
-
-            setUsers(
-                response.data.users || []
+            const response = await axios.get(
+                `${API_BASE_URL}/api/admin/users`
             );
 
-
-        }
-        catch(error){
-
-            console.log(
-                "Users Error:",
-                error
+            setUsers(response.data.users || []);
+        } catch (err) {
+            console.error("Users Error:", err);
+            setError(
+                err.response?.data?.message ||
+                "Unable to load customers. Please try again."
             );
-
-        }
-        finally{
-
+        } finally {
             setLoading(false);
-
         }
+    }, []);
 
-    };
+    useEffect(() => {
+        fetchUsers();
+    }, [fetchUsers]);
 
+    const deleteUser = async (id) => {
+        const confirmed = window.confirm(
+            "Are you sure you want to delete this customer? This action cannot be undone."
+        );
 
+        if (!confirmed) return;
 
-
-    // ==========================
-    // DELETE USER
-    // ==========================
-
-    const deleteUser = async(id)=>{
-
-
-        const confirmDelete =
-            window.confirm(
-                "Delete this user?"
-            );
-
-
-        if(!confirmDelete)
-            return;
-
-
-
-        try{
-
+        try {
+            setDeletingId(id);
 
             await axios.delete(
-                `http://localhost:5000/api/admin/users/${id}`
+                `${API_BASE_URL}/api/admin/users/${id}`
             );
 
+            setUsers((previousUsers) =>
+                previousUsers.filter((user) => user.id !== id)
+            );
+        } catch (err) {
+            console.error("Delete User Error:", err);
 
-            fetchUsers();
-
-
+            window.alert(
+                err.response?.data?.message ||
+                "Unable to delete customer. Please try again."
+            );
+        } finally {
+            setDeletingId(null);
         }
-        catch(error){
-
-            console.log(error);
-
-        }
-
-
     };
 
+    const filteredUsers = users.filter((user) => {
+        const searchTerm = search.toLowerCase().trim();
 
-
-
-
-    const filteredUsers =
-        users.filter(user=>
-
-            user.full_name
-            ?.toLowerCase()
-            .includes(
-                search.toLowerCase()
-            )
-
+        return [
+            user.full_name,
+            user.email,
+            user.account_number,
+            user.phone
+        ].some((value) =>
+            String(value || "").toLowerCase().includes(searchTerm)
         );
-
-
-
-
-
-    if(loading){
-
-
-        return (
-
-            <div className="users-loading">
-
-                Loading Users...
-
-            </div>
-
-        );
-
-    }
-
-
-
-
-
-    return (
-
-        <div className="users-page">
-
-
-
-            {/* HEADER */}
-
-            <div className="users-header">
-
-
-                <div>
-
-                    <h1>
-                        Users Management
-                    </h1>
-
-                    <p>
-                        Manage all Richiee Bank customers
-                    </p>
-
-                </div>
-
-
-
-                <button className="add-user-btn">
-
-                    <Link
-                        to="/admin/users/add"
-                        className="add-user-btn"
-                    >
-                        <FaUserPlus />
-                        <span>Add User</span>
-                    </Link>
-
-                </button>
-
-
-            </div>
-
-
-
-
-
-            {/* SEARCH */}
-
-            <div className="users-toolbar">
-
-
-                <div className="search-box">
-
-
-                    <FaSearch/>
-
-
-                    <input
-
-                        type="text"
-
-                        placeholder="Search users..."
-
-                        value={search}
-
-                        onChange={(e)=>
-                            setSearch(
-                                e.target.value
-                            )
-                        }
-
-                    />
-
-
-                </div>
-
-
-            </div>
-
-
-
-
-
-
-
-            {/* TABLE */}
-
-
-            <div className="users-card">
-
-
-                <div className="table-responsive">
-
-
-                    <table>
-
-
-                        <thead>
-
-                            <tr>
-
-                                <th>
-                                    #
-                                </th>
-
-
-                                <th>
-                                    Name
-                                </th>
-
-
-                                <th>
-                                    Email
-                                </th>
-
-
-                                <th>
-                                    Account Number
-                                </th>
-
-
-                                <th>
-                                    Balance
-                                </th>
-
-
-                                <th>
-                                    Status
-                                </th>
-
-
-                                <th>
-                                    Action
-                                </th>
-
-
-                            </tr>
-
-
-                        </thead>
-
-
-
-
-
-                        <tbody>
-
-
-                        {
-                            filteredUsers.map(
-                                (user,index)=>(
-
-
-                                <tr key={user.id}>
-
-
-                                    <td>
-                                        {index+1}
-                                    </td>
-
-
-                                    <td>
-
-                                        {user.full_name}
-
-                                    </td>
-
-
-
-                                    <td>
-
-                                        {user.email}
-
-                                    </td>
-
-
-
-
-                                    <td>
-
-                                        {user.account_number}
-
-                                    </td>
-
-
-
-
-                                    <td>
-
-                                        $
-                                        {
-                                            Number(
-                                                user.balance
-                                            )
-                                            .toLocaleString()
-                                        }
-
-                                    </td>
-
-
-
-
-                                    <td>
-
-
-                                        <span
-                                        className={
-                                            user.status==="active"
-                                            ?
-                                            "active-status"
-                                            :
-                                            "inactive-status"
-                                        }
-                                        >
-
-                                            {
-                                                user.status
-                                            }
-
-                                        </span>
-
-
-                                    </td>
-
-
-
-
-
-                                    <td>
-
-
-                                        <div className="action-buttons">
-
-
-                                            <button
-                                                className="view"
-                                                onClick={() =>
-                                                    navigate(
-                                                        `/admin/users/${user.id}`
-                                                    )
-                                                }
-                                            >
-                                                <FaEye/>
-                                            </button>
-
-
-
-                                            <button
-                                            className="edit"
-                                            >
-
-                                                <FaEdit/>
-
-                                            </button>
-
-
-
-
-                                            <button
-
-                                            className="delete"
-
-                                            onClick={()=>
-                                                deleteUser(
-                                                    user.id
-                                                )
-                                            }
-
-                                            >
-
-                                                <FaTrash/>
-
-                                            </button>
-
-
-
-                                        </div>
-
-
-                                    </td>
-
-
-
-                                </tr>
-
-
-                            ))
-
-                        }
-
-
-                        </tbody>
-
-
-
-                    </table>
-
-
-
-                </div>
-
-
-
-            </div>
-
-
-
-        </div>
-
+    });
+
+    const activeUsers = users.filter(
+        (user) => user.status?.toLowerCase() === "active"
+    ).length;
+
+    const totalBalance = users.reduce(
+        (total, user) => total + Number(user.balance || 0),
+        0
     );
 
+    const formatBalance = (balance) =>
+        Number(balance || 0).toLocaleString("en-US", {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        });
 
+    if (loading) {
+        return (
+            <div className="users-loading">
+                <div className="users-spinner"></div>
+                <p>Loading customers...</p>
+            </div>
+        );
+    }
+
+    return (
+        <div className="users-page">
+
+            {/* PAGE HEADER */}
+            <div className="users-header">
+                <div className="users-heading">
+                    <span className="users-eyebrow">
+                        CUSTOMER MANAGEMENT
+                    </span>
+
+                    <h1>Users Management</h1>
+
+                    <p>
+                        Manage, monitor and maintain all Skyravon Bank customers.
+                    </p>
+                </div>
+
+                <Link
+                    to="/admin/users/add"
+                    className="add-user-btn"
+                >
+                    <FaUserPlus />
+                    <span>Add New Customer</span>
+                </Link>
+            </div>
+
+            {/* STATISTICS */}
+            <div className="users-stats">
+
+                <div className="user-stat-card">
+                    <div className="user-stat-icon blue">
+                        <FaUsers />
+                    </div>
+
+                    <div>
+                        <span>Total Customers</span>
+                        <h3>{users.length.toLocaleString()}</h3>
+                    </div>
+                </div>
+
+                <div className="user-stat-card">
+                    <div className="user-stat-icon green">
+                        <FaUserCheck />
+                    </div>
+
+                    <div>
+                        <span>Active Customers</span>
+                        <h3>{activeUsers.toLocaleString()}</h3>
+                    </div>
+                </div>
+
+                <div className="user-stat-card">
+                    <div className="user-stat-icon purple">
+                        <FaWallet />
+                    </div>
+
+                    <div>
+                        <span>Total Customer Balances</span>
+                        <h3>${formatBalance(totalBalance)}</h3>
+                    </div>
+                </div>
+
+            </div>
+
+            {/* CUSTOMER TABLE CARD */}
+            <div className="users-card">
+
+                <div className="users-card-header">
+                    <div>
+                        <h2>All Customers</h2>
+                        <p>
+                            {filteredUsers.length} customer(s) found
+                        </p>
+                    </div>
+
+                    <button
+                        type="button"
+                        className="refresh-users-btn"
+                        onClick={fetchUsers}
+                        title="Refresh customers"
+                    >
+                        <FaSyncAlt />
+                        <span>Refresh</span>
+                    </button>
+                </div>
+
+                {/* SEARCH */}
+                <div className="users-toolbar">
+                    <div className="search-box">
+                        <FaSearch />
+
+                        <input
+                            type="search"
+                            placeholder="Search by name, email, phone or account number..."
+                            value={search}
+                            onChange={(e) => setSearch(e.target.value)}
+                        />
+
+                        {search && (
+                            <button
+                                type="button"
+                                className="clear-search"
+                                onClick={() => setSearch("")}
+                                aria-label="Clear search"
+                            >
+                                ×
+                            </button>
+                        )}
+                    </div>
+                </div>
+
+                {/* ERROR */}
+                {error && (
+                    <div className="users-error">
+                        <span>{error}</span>
+
+                        <button
+                            type="button"
+                            onClick={fetchUsers}
+                        >
+                            Try Again
+                        </button>
+                    </div>
+                )}
+
+                {/* TABLE */}
+                <div className="table-responsive">
+                    <table className="users-table">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Customer</th>
+                                <th>Email Address</th>
+                                <th>Account Number</th>
+                                <th>Account Balance</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            {filteredUsers.length > 0 ? (
+                                filteredUsers.map((user, index) => (
+                                    <tr key={user.id}>
+                                        <td className="user-number">
+                                            {index + 1}
+                                        </td>
+
+                                        <td>
+                                            <div className="customer-info">
+                                                <div className="customer-avatar">
+                                                    {user.full_name
+                                                        ?.trim()
+                                                        ?.charAt(0)
+                                                        ?.toUpperCase() || "U"}
+                                                </div>
+
+                                                <div className="customer-name">
+                                                    <strong>
+                                                        {user.full_name || "Unnamed Customer"}
+                                                    </strong>
+                                                    <span>Customer</span>
+                                                </div>
+                                            </div>
+                                        </td>
+
+                                        <td className="user-email">
+                                            {user.email || "—"}
+                                        </td>
+
+                                        <td>
+                                            <span className="account-number">
+                                                {user.account_number || "—"}
+                                            </span>
+                                        </td>
+
+                                        <td className="user-balance">
+                                            ${formatBalance(user.balance)}
+                                        </td>
+
+                                        <td>
+                                            <span
+                                                className={`user-status ${
+                                                    user.status?.toLowerCase() === "active"
+                                                        ? "active"
+                                                        : "inactive"
+                                                }`}
+                                            >
+                                                <span className="status-dot"></span>
+                                                {user.status || "Unknown"}
+                                            </span>
+                                        </td>
+
+                                        <td>
+                                            <div className="action-buttons">
+
+                                                <button
+                                                    type="button"
+                                                    className="action-btn view"
+                                                    title="View Customer"
+                                                    aria-label="View customer"
+                                                    onClick={() =>
+                                                        navigate(`/admin/users/${user.id}`)
+                                                    }
+                                                >
+                                                    <FaEye />
+                                                </button>
+
+                                                <button
+                                                    type="button"
+                                                    className="action-btn edit"
+                                                    title="Edit Customer"
+                                                    aria-label="Edit customer"
+                                                    onClick={() =>
+                                                        navigate(`/admin/users/edit/${user.id}`)
+                                                    }
+                                                >
+                                                    <FaEdit />
+                                                </button>
+
+                                                <button
+                                                    type="button"
+                                                    className="action-btn delete"
+                                                    title="Delete Customer"
+                                                    aria-label="Delete customer"
+                                                    disabled={deletingId === user.id}
+                                                    onClick={() => deleteUser(user.id)}
+                                                >
+                                                    {deletingId === user.id
+                                                        ? "..."
+                                                        : <FaTrash />
+                                                    }
+                                                </button>
+
+                                            </div>
+                                        </td>
+                                    </tr>
+                                ))
+                            ) : (
+                                <tr>
+                                    <td colSpan="7" className="empty-users">
+                                        <div className="empty-users-content">
+                                            <FaUsers />
+                                            <h3>No customers found</h3>
+                                            <p>
+                                                {search
+                                                    ? "Try another search term."
+                                                    : "Customers will appear here once they are added."
+                                                }
+                                            </p>
+                                        </div>
+                                    </td>
+                                </tr>
+                            )}
+                        </tbody>
+                    </table>
+                </div>
+
+                <div className="users-table-footer">
+                    Showing {filteredUsers.length} of {users.length} customers
+                </div>
+
+            </div>
+        </div>
+    );
 }
-
 
 export default Users;

@@ -16,7 +16,7 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Dashboard from "./pages/Dashboard";
 import Profile from "./pages/Profile";
-import Settings from "./pages/Settings";
+import UserSettings from "./pages/Settings";
 import Transactions from "./pages/Transactions";
 import Transfer from "./pages/Transfer";
 import Withdraw from "./pages/Withdraw";
@@ -36,6 +36,11 @@ import TopUp from "./admin/pages/TopUp";
 import Transfers from "./admin/pages/Transfers";
 import Cards from "./admin/pages/Cards";
 import AdminTransactions from "./admin/pages/AdminTransactions";
+import EditUser from "./admin/pages/EditUser";
+import CreateCard from "./admin/pages/CreateCard";
+import Administrators from "./admin/pages/Administrators";
+import AdminSettings from "./admin/pages/Settings";
+import AdminRegister from "./admin/pages/AdminRegister";
 
 function App() {
 
@@ -75,9 +80,9 @@ function App() {
                         element={<Profile />}
                     />
 
-                    <Route
-                        path="/settings"
-                        element={<Settings />}
+                    <Route 
+                        path="/settings" 
+                        element={<UserSettings />} 
                     />
 
                     <Route
@@ -162,6 +167,32 @@ function App() {
                         path="/admin/dashboard"
                         element={<AdminDashboard />}
                     />
+
+                    <Route
+                        path="/admin/users/edit/:id"
+                        element={<EditUser />}
+                    />
+
+                    <Route
+                        path="/admin/create-card"
+                        element={<CreateCard />}
+                    />
+
+                    <Route
+                        path="/admin/admins"
+                        element={<Administrators />}
+                    />
+                    
+                    <Route 
+                        path="/admin/settings" 
+                        element={<AdminSettings />} 
+                    />
+
+                    <Route
+                        path="/admin/adminregister"
+                        element={<AdminRegister />}
+                    />
+                    
                 </Route>
 
                 {/* 404 */}

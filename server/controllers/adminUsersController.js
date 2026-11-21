@@ -2,6 +2,10 @@ const bcrypt = require("bcryptjs");
 
 const pool = require("../config/db");
 
+const {
+    sendUserCreatedEmail
+} = require("../utils/sendEmail");
+
 
 // ======================================
 // GET USERS
@@ -10,7 +14,6 @@ const pool = require("../config/db");
 exports.getUsers = async(req,res)=>{
 
     try{
-
 
         const [users] = await pool.query(
 
@@ -33,11 +36,9 @@ exports.getUsers = async(req,res)=>{
             FROM users
 
             ORDER BY id DESC
-
             `
 
         );
-
 
         res.json({
 
@@ -46,7 +47,6 @@ exports.getUsers = async(req,res)=>{
             users
 
         });
-
 
     }
     catch(error){
@@ -67,20 +67,15 @@ exports.getUsers = async(req,res)=>{
 
 
 
-
-
 // ======================================
 // GET SINGLE USER
 // ======================================
 
 exports.getUser = async(req,res)=>{
 
-
     try{
 
-
         const {id}=req.params;
-
 
         const [user] =
         await pool.query(
@@ -89,8 +84,6 @@ exports.getUser = async(req,res)=>{
             [id]
 
         );
-
-
 
         if(user.length===0){
 
@@ -104,8 +97,6 @@ exports.getUser = async(req,res)=>{
 
         }
 
-
-
         res.json({
 
             success:true,
@@ -113,7 +104,6 @@ exports.getUser = async(req,res)=>{
             user:user[0]
 
         });
-
 
     }
     catch(error){
@@ -132,314 +122,374 @@ exports.getUser = async(req,res)=>{
 
 
 
-
-
-
-
 // ======================================
 // CREATE USER
 // ======================================
 
 exports.createUser = async(req,res)=>{
 
+    try{
 
-try{
+        const {
 
+            full_name,
+            email,
+            phone,
+            password,
+            balance,
+            address,
+            city,
+            state,
+            country,
+            status
 
-const {
+        }=req.body;
 
-full_name,
-email,
-phone,
-password,
-balance,
-address,
-city,
-state,
-country,
-status
 
-}=req.body;
+        // ======================================
+        // REQUIRED FIELDS
+        // ======================================
 
+        if(
+            !full_name ||
+            !email ||
+            !phone ||
+            !password
+        ){
 
+            return res.status(400).json({
 
-if(
-!full_name ||
-!email ||
-!phone ||
-!password
-){
+                success:false,
 
-return res.status(400).json({
+                message:"Required fields missing"
 
-success:false,
+            });
 
-message:"Required fields missing"
+        }
 
-});
 
-}
+        // ======================================
+        // CHECK EMAIL
+        // ======================================
 
+        const [emailCheck]=
+        await pool.query(
 
+            "SELECT id FROM users WHERE email=?",
+            [email]
 
+        );
 
-const [emailCheck]=
-await pool.query(
 
-"SELECT id FROM users WHERE email=?",
-[email]
+        if(emailCheck.length){
 
-);
+            return res.status(400).json({
 
+                success:false,
 
+                message:"Email already exists"
 
-if(emailCheck.length){
+            });
 
-return res.status(400).json({
+        }
 
-message:"Email already exists"
 
-});
+        // ======================================
+        // GENERATE ACCOUNT NUMBER
+        // ======================================
 
-}
+        let account_number;
 
 
+        while(true){
 
+            account_number =
+            Math.floor(
+                1000000000 +
+                Math.random()*9000000000
+            ).toString();
 
 
-let account_number;
+            const [check]=
+            await pool.query(
 
+                "SELECT id FROM users WHERE account_number=?",
+                [account_number]
 
-while(true){
+            );
 
 
-account_number =
-Math.floor(
-1000000000 +
-Math.random()*9000000000
-).toString();
+            if(check.length===0)
+                break;
 
+        }
 
 
-const [check]=
-await pool.query(
+        // ======================================
+        // HASH PASSWORD
+        // ======================================
 
-"SELECT id FROM users WHERE account_number=?",
-[account_number]
+        const password_hash =
+        await bcrypt.hash(password,10);
+
+
+        // ======================================
+        // PROFILE PICTURE
+        // ======================================
+
+        let profile_picture=null;
+
+
+        if(req.file){
+
+            profile_picture =
+            "/uploads/profiles/"+req.file.filename;
+
+        }
+
+
+        
+        // ======================================
+        // CREATE USER
+        // ======================================
 
-);
+        const {
+            transaction_pin
+        } = req.body;
 
+        // Validate transaction PIN
+        if (
+            !transaction_pin ||
+            !/^\d{4}$/.test(String(transaction_pin))
+        ) {
+            return res.status(400).json({
+                success: false,
+                message: "Transaction PIN must contain exactly 4 digits."
+            });
+        }
 
+        // Hash transaction PIN
+        const transaction_pin_hash = await bcrypt.hash(
+            String(transaction_pin),
+            10
+        );
 
-if(check.length===0)
-break;
+        const [result] = await pool.query(
+            `
+            INSERT INTO users
+            (
+                full_name,
+                email,
+                phone,
+                account_number,
+                password_hash,
+                balance,
+                address,
+                city,
+                state,
+                country,
+                profile_picture,
+                status,
+                transaction_pin
+            )
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            `,
+            [
+                full_name,
+                email,
+                phone,
+                account_number,
+                password_hash,
+                balance || 0,
+                address || "",
+                city || "",
+                state || "",
+                country || "Nigeria",
+                profile_picture,
+                status || "active",
+                transaction_pin_hash
+            ]
+        );
 
 
-}
+        // ======================================
+        // SEND EMAIL ALERT
+        // ======================================
 
+        try{
 
+            await sendUserCreatedEmail({
 
+                email: email,
 
-const password_hash =
-await bcrypt.hash(password,10);
+                full_name: full_name,
 
+                account_number: account_number
 
+            });
 
-let profile_picture=null;
+            console.log(
+                `Account creation email sent to ${email}`
+            );
 
+        }
+        catch(emailError){
 
-if(req.file){
+            console.error(
+                "User created, but email could not be sent:",
+                emailError
+            );
 
-profile_picture =
-"/uploads/profiles/"+req.file.filename;
+        }
 
-}
 
+        // ======================================
+        // SUCCESS RESPONSE
+        // ======================================
 
+        res.status(201).json({
 
+            success:true,
 
-const [result]=
-await pool.query(
+            message:
+            "User created successfully. Account notification email sent.",
 
-`
-INSERT INTO users
-(
-full_name,
-email,
-phone,
-account_number,
-password_hash,
-balance,
-address,
-city,
-state,
-country,
-profile_picture,
-status
-)
+            id:result.insertId,
 
-VALUES(?,?,?,?,?,?,?,?,?,?,?,?)
+            account_number:account_number
 
-`,
+        });
 
-[
 
-full_name,
-email,
-phone,
-account_number,
-password_hash,
-balance || 0,
-address || "",
-city || "",
-state || "",
-country || "Nigeria",
-profile_picture,
-status || "active"
+    }
+    catch(error){
 
-]
+        console.log(error);
 
 
-);
+        res.status(500).json({
 
+            success:false,
 
+            message:"Server error"
 
+        });
 
-
-res.status(201).json({
-
-success:true,
-
-message:"User created successfully",
-
-id:result.insertId
-
-});
-
-
-
-}
-catch(error){
-
-console.log(error);
-
-
-res.status(500).json({
-
-message:"Server error"
-
-});
-
-
-}
-
+    }
 
 };
 
 
 
 
+ // ======================================
+ // UPDATE USER
+ // ======================================
 
+exports.updateUser = async (req, res) => {
+    try {
+        const { id } = req.params;
 
+        const {
+            full_name,
+            email,
+            phone,
+            address,
+            city,
+            state,
+            country,
+            status,
+            balance,
+            transaction_pin
+        } = req.body;
 
-// ======================================
-// UPDATE USER
-// ======================================
+        // Check that the customer exists.
+        const [existingUsers] = await pool.query(
+            "SELECT id FROM users WHERE id = ?",
+            [id]
+        );
 
-exports.updateUser = async(req,res)=>{
+        if (existingUsers.length === 0) {
+            return res.status(404).json({
+                success: false,
+                message: "User not found."
+            });
+        }
 
+        // Validate a new transaction PIN, if provided.
+        let hashedPin = null;
 
-try{
+        if (
+            transaction_pin !== undefined &&
+            transaction_pin !== ""
+        ) {
+            if (!/^\d{4}$/.test(String(transaction_pin))) {
+                return res.status(400).json({
+                    success: false,
+                    message: "Transaction PIN must contain exactly 4 digits."
+                });
+            }
 
+            hashedPin = await bcrypt.hash(
+                String(transaction_pin),
+                10
+            );
+        }
 
-const {id}=req.params;
+        // Update customer details without overwriting the existing PIN.
+        await pool.query(
+            `
+            UPDATE users SET
+                full_name = ?,
+                email = ?,
+                phone = ?,
+                address = ?,
+                city = ?,
+                state = ?,
+                country = ?,
+                status = ?,
+                balance = ?,
+                transaction_pin = COALESCE(?, transaction_pin)
+            WHERE id = ?
+            `,
+            [
+                full_name,
+                email,
+                phone,
+                address || "",
+                city || "",
+                state || "",
+                country || "Nigeria",
+                status,
+                balance,
+                hashedPin,
+                id
+            ]
+        );
 
+        return res.json({
+            success: true,
+            message: hashedPin
+                ? "Customer updated and transaction PIN changed successfully."
+                : "Customer updated successfully."
+        });
 
-const {
+    } catch (error) {
+        console.error("Update user error:", error);
 
-full_name,
-email,
-phone,
-address,
-city,
-state,
-country,
-status,
-balance
+        if (error.code === "ER_DUP_ENTRY") {
+            return res.status(400).json({
+                success: false,
+                message: "That email or phone number is already in use."
+            });
+        }
 
-}=req.body;
-
-
-
-await pool.query(
-
-`
-UPDATE users SET
-
-full_name=?,
-email=?,
-phone=?,
-address=?,
-city=?,
-state=?,
-country=?,
-status=?,
-balance=?
-
-WHERE id=?
-
-`,
-
-[
-
-full_name,
-email,
-phone,
-address,
-city,
-state,
-country,
-status,
-balance,
-id
-
-]
-
-);
-
-
-
-res.json({
-
-success:true,
-
-message:"User updated"
-
-});
-
-
-}
-catch(error){
-
-console.log(error);
-
-res.status(500).json({
-
-message:"Update failed"
-
-});
-
-
-}
-
+        return res.status(500).json({
+            success: false,
+            message: "Failed to update customer."
+        });
+    }
 };
-
-
-
-
-
-
-
 
 // ======================================
 // DELETE USER
@@ -447,47 +497,38 @@ message:"Update failed"
 
 exports.deleteUser = async(req,res)=>{
 
+    try{
 
-try{
+        await pool.query(
 
+            "DELETE FROM users WHERE id=?",
 
-await pool.query(
+            [req.params.id]
 
-"DELETE FROM users WHERE id=?",
-
-[req.params.id]
-
-);
+        );
 
 
+        res.json({
 
-res.json({
+            success:true,
 
-success:true,
+            message:"User deleted"
 
-message:"User deleted"
-
-});
+        });
 
 
-}
-catch(error){
+    }
+    catch(error){
 
-res.status(500).json({
+        res.status(500).json({
 
-message:"Delete failed"
+            message:"Delete failed"
 
-});
+        });
 
-}
-
+    }
 
 };
-
-
-
-
-
 
 
 
@@ -497,35 +538,29 @@ message:"Delete failed"
 
 exports.blockUser = async(req,res)=>{
 
+    await pool.query(
 
-await pool.query(
+        `
+        UPDATE users
+        SET status='blocked'
+        WHERE id=?
 
-`
-UPDATE users
-SET status='blocked'
-WHERE id=?
+        `,
 
-`,
+        [req.params.id]
 
-[req.params.id]
-
-);
+    );
 
 
-res.json({
+    res.json({
 
-success:true,
+        success:true,
 
-message:"User blocked"
+        message:"User blocked"
 
-});
-
+    });
 
 };
-
-
-
-
 
 
 
@@ -535,29 +570,26 @@ message:"User blocked"
 
 exports.unblockUser = async(req,res)=>{
 
+    await pool.query(
 
-await pool.query(
+        `
+        UPDATE users
+        SET status='active'
+        WHERE id=?
 
-`
-UPDATE users
-SET status='active'
-WHERE id=?
+        `,
 
-`,
+        [req.params.id]
 
-[req.params.id]
-
-);
-
+    );
 
 
-res.json({
+    res.json({
 
-success:true,
+        success:true,
 
-message:"User activated"
+        message:"User activated"
 
-});
-
+    });
 
 };

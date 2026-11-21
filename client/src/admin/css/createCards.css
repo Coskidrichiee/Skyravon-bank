@@ -1,0 +1,654 @@
+
+/* ==========================================================
+   RICHIEE BANK
+   CREATE CUSTOMER CARD — PREMIUM FINTECH DESIGN
+========================================================== */
+
+:root {
+    --rb-primary: #2563eb;
+    --rb-primary-dark: #1749b8;
+    --rb-navy: #101c35;
+    --rb-navy-light: #1c3158;
+    --rb-background: #f3f6fc;
+    --rb-white: #ffffff;
+    --rb-text: #182230;
+    --rb-muted: #667085;
+    --rb-border: #e6eaf1;
+    --rb-success: #039855;
+    --rb-danger: #d92d20;
+    --rb-radius: 18px;
+    --rb-shadow: 0 10px 35px rgba(16, 28, 53, 0.07);
+    --rb-transition: 0.25s ease;
+}
+
+/* PAGE */
+
+.admin-cards-page {
+    width: 100%;
+    min-height: 100vh;
+    padding: 32px;
+    background: var(--rb-background);
+    color: var(--rb-text);
+    font-family: Inter, "Segoe UI", sans-serif;
+    box-sizing: border-box;
+}
+
+.admin-cards-page *,
+.admin-cards-page *::before,
+.admin-cards-page *::after {
+    box-sizing: border-box;
+}
+
+/* HEADER */
+
+.cards-page-header {
+    position: relative;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    min-height: 185px;
+    padding: 35px 40px;
+    margin-bottom: 25px;
+    overflow: hidden;
+    border-radius: 22px;
+    background: linear-gradient(
+        115deg,
+        #101c35 0%,
+        #17366c 55%,
+        #2563eb 100%
+    );
+    color: white;
+    box-shadow: 0 15px 35px rgba(37, 99, 235, 0.16);
+}
+
+.cards-page-header::before {
+    content: "";
+    position: absolute;
+    width: 280px;
+    height: 280px;
+    top: -170px;
+    right: 100px;
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 50%;
+}
+
+.cards-page-header::after {
+    content: "";
+    position: absolute;
+    width: 220px;
+    height: 220px;
+    right: -70px;
+    bottom: -145px;
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 50%;
+}
+
+.cards-page-header > div:first-child {
+    position: relative;
+    z-index: 2;
+}
+
+.cards-header-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 9px;
+    margin-bottom: 15px;
+    color: #c9dcff;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 1.6px;
+}
+
+.cards-page-header h1 {
+    margin: 0 0 10px;
+    color: #fff;
+    font-size: clamp(25px, 3vw, 34px);
+    font-weight: 750;
+    letter-spacing: -0.8px;
+}
+
+.cards-page-header p {
+    margin: 0;
+    color: #d5e3ff;
+    font-size: 14px;
+    line-height: 1.7;
+}
+
+.cards-header-icon {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 82px;
+    height: 82px;
+    flex-shrink: 0;
+    border: 1px solid rgba(255,255,255,0.2);
+    border-radius: 23px;
+    background: rgba(255,255,255,0.12);
+    color: white;
+    font-size: 35px;
+    backdrop-filter: blur(12px);
+}
+
+/* BACK BUTTON */
+
+.create-card-back-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    min-height: 44px;
+    padding: 0 17px;
+    margin-bottom: 25px;
+    border: 1px solid var(--rb-border);
+    border-radius: 10px;
+    background: white;
+    color: #344054;
+    font-size: 13px;
+    font-weight: 650;
+    cursor: pointer;
+    transition: var(--rb-transition);
+}
+
+.create-card-back-btn:hover {
+    border-color: var(--rb-primary);
+    background: #eff5ff;
+    color: var(--rb-primary);
+    transform: translateX(-3px);
+}
+
+/* ALERT MESSAGES */
+
+.cards-message {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 15px 18px;
+    margin-bottom: 23px;
+    border: 1px solid transparent;
+    border-radius: 12px;
+    font-size: 13px;
+    font-weight: 600;
+    animation: rbMessage 0.3s ease;
+}
+
+.cards-message.success {
+    border-color: #a6f4c5;
+    background: #ecfdf3;
+    color: #067647;
+}
+
+.cards-message.error {
+    border-color: #fecdca;
+    background: #fef3f2;
+    color: #b42318;
+}
+
+.cards-message svg {
+    flex-shrink: 0;
+    font-size: 17px;
+}
+
+@keyframes rbMessage {
+    from {
+        opacity: 0;
+        transform: translateY(-8px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* MAIN CONTENT LAYOUT */
+
+.create-card-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1.65fr) minmax(280px, 0.85fr);
+    align-items: start;
+    gap: 25px;
+}
+
+/* FORM CARD */
+
+.cards-preview-panel {
+    min-width: 0;
+    padding: 30px;
+    border: 1px solid var(--rb-border);
+    border-radius: var(--rb-radius);
+    background: var(--rb-white);
+    box-shadow: var(--rb-shadow);
+}
+
+.create-card-form-panel {
+    animation: rbAppear 0.45s ease;
+}
+
+@keyframes rbAppear {
+    from {
+        opacity: 0;
+        transform: translateY(12px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* SECTION HEADING */
+
+.cards-section-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-bottom: 22px;
+    margin-bottom: 26px;
+    border-bottom: 1px solid #edf0f5;
+}
+
+.cards-section-heading h2 {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    margin: 0 0 8px;
+    color: var(--rb-navy);
+    font-size: 20px;
+    font-weight: 750;
+}
+
+.cards-section-heading h2 svg {
+    color: var(--rb-primary);
+    font-size: 17px;
+}
+
+.cards-section-heading p {
+    margin: 0;
+    color: var(--rb-muted);
+    font-size: 13px;
+    line-height: 1.7;
+}
+
+/* FORM FIELDS */
+
+.create-card-field {
+    display: flex;
+    flex-direction: column;
+    gap: 9px;
+    margin-bottom: 23px;
+}
+
+.create-card-field label {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    color: #344054;
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.create-card-field label svg {
+    color: var(--rb-primary);
+    font-size: 13px;
+}
+
+.create-card-field input,
+.create-card-field select {
+    width: 100%;
+    height: 53px;
+    padding: 0 15px;
+    outline: none;
+    border: 1px solid #dce3ed;
+    border-radius: 11px;
+    background: #fbfcfe;
+    color: #182230;
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 500;
+    transition: var(--rb-transition);
+}
+
+.create-card-field select {
+    cursor: pointer;
+}
+
+.create-card-field input:hover,
+.create-card-field select:hover {
+    border-color: #a8c4ff;
+    background: #fff;
+}
+
+.create-card-field input:focus,
+.create-card-field select:focus {
+    border-color: var(--rb-primary);
+    background: #fff;
+    box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.10);
+}
+
+.create-card-field input:disabled,
+.create-card-field select:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* TWO COLUMN INPUTS */
+
+.create-card-two-columns {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 18px;
+}
+
+/* SECURITY NOTICE */
+
+.create-card-notice {
+    display: flex;
+    align-items: flex-start;
+    gap: 13px;
+    padding: 17px;
+    margin: 8px 0 25px;
+    border: 1px solid #d1e0ff;
+    border-radius: 12px;
+    background: #f0f5ff;
+}
+
+.create-card-notice > svg {
+    flex-shrink: 0;
+    margin-top: 2px;
+    color: var(--rb-primary);
+    font-size: 17px;
+}
+
+.create-card-notice p {
+    margin: 0;
+    color: #344b73;
+    font-size: 12px;
+    line-height: 1.8;
+}
+
+/* FORM ACTION BUTTONS */
+
+.create-card-buttons {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 13px;
+    padding-top: 22px;
+    border-top: 1px solid #edf0f5;
+}
+
+.create-card-buttons button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    min-height: 49px;
+    padding: 0 23px;
+    border-radius: 10px;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: var(--rb-transition);
+}
+
+.create-card-cancel-btn {
+    border: 1px solid #d0d5dd;
+    background: white;
+    color: #475467;
+}
+
+.create-card-cancel-btn:hover {
+    border-color: #98a2b3;
+    background: #f9fafb;
+}
+
+.create-card-submit-btn {
+    border: 1px solid var(--rb-primary);
+    background: linear-gradient(110deg, #155eef, #367bf5);
+    color: white;
+    box-shadow: 0 5px 14px rgba(37, 99, 235, 0.2);
+}
+
+.create-card-submit-btn:hover:not(:disabled) {
+    border-color: var(--rb-primary-dark);
+    background: linear-gradient(110deg, #1749b8, #2563eb);
+    box-shadow: 0 8px 20px rgba(37, 99, 235, 0.27);
+    transform: translateY(-2px);
+}
+
+.create-card-submit-btn:active:not(:disabled) {
+    transform: translateY(0);
+}
+
+.create-card-submit-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    box-shadow: none;
+}
+
+/* RIGHT SIDE BANKING PANEL */
+
+.create-card-side-panel {
+    position: relative;
+    overflow: hidden;
+    padding: 30px 26px;
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: var(--rb-radius);
+    background: linear-gradient(
+        150deg,
+        #101c35 0%,
+        #17366c 65%,
+        #2563eb 120%
+    );
+    color: white;
+    box-shadow: 0 15px 35px rgba(16, 28, 53, 0.15);
+    animation: rbAppear 0.55s ease;
+}
+
+.create-card-side-panel::before {
+    content: "";
+    position: absolute;
+    top: -100px;
+    right: -100px;
+    width: 240px;
+    height: 240px;
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 50%;
+}
+
+.create-card-side-panel::after {
+    content: "";
+    position: absolute;
+    right: -70px;
+    bottom: -130px;
+    width: 230px;
+    height: 230px;
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 50%;
+}
+
+.create-card-side-panel > * {
+    position: relative;
+    z-index: 1;
+}
+
+.create-card-side-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 62px;
+    height: 62px;
+    margin-bottom: 25px;
+    border: 1px solid rgba(255,255,255,0.2);
+    border-radius: 17px;
+    background: rgba(255,255,255,0.12);
+    color: white;
+    font-size: 27px;
+}
+
+.create-card-side-panel h2 {
+    margin: 0 0 13px;
+    color: white;
+    font-size: 21px;
+    font-weight: 750;
+}
+
+.create-card-side-panel > p {
+    margin: 0 0 28px;
+    color: #d3e1ff;
+    font-size: 13px;
+    line-height: 1.9;
+}
+
+/* FEATURE LIST */
+
+.create-card-feature {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 0;
+    border-top: 1px solid rgba(255,255,255,0.13);
+    color: #edf4ff;
+    font-size: 12px;
+    font-weight: 550;
+    line-height: 1.6;
+}
+
+.create-card-feature svg {
+    flex-shrink: 0;
+    color: #64e6a5;
+    font-size: 16px;
+}
+
+/* TABLET */
+
+@media (max-width: 1000px) {
+    .create-card-layout {
+        grid-template-columns: minmax(0, 1.4fr) minmax(240px, 0.8fr);
+        gap: 18px;
+    }
+
+    .cards-preview-panel {
+        padding: 24px;
+    }
+
+    .create-card-side-panel {
+        padding: 25px 20px;
+    }
+}
+
+/* SMALL TABLETS */
+
+@media (max-width: 800px) {
+    .admin-cards-page {
+        padding: 22px;
+    }
+
+    .create-card-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .create-card-side-panel {
+        padding: 25px;
+    }
+}
+
+/* MOBILE */
+
+@media (max-width: 600px) {
+    .admin-cards-page {
+        padding: 14px;
+    }
+
+    .cards-page-header {
+        min-height: 155px;
+        padding: 25px 20px;
+        border-radius: 17px;
+    }
+
+    .cards-page-header h1 {
+        font-size: 24px;
+    }
+
+    .cards-page-header p {
+        max-width: 250px;
+        font-size: 12px;
+    }
+
+    .cards-header-label {
+        font-size: 9px;
+        letter-spacing: 1px;
+    }
+
+    .cards-header-icon {
+        width: 55px;
+        height: 55px;
+        border-radius: 15px;
+        font-size: 23px;
+    }
+
+    .cards-preview-panel {
+        padding: 20px 16px;
+        border-radius: 15px;
+    }
+
+    .cards-section-heading h2 {
+        font-size: 18px;
+    }
+
+    .cards-section-heading p {
+        font-size: 12px;
+    }
+
+    .create-card-two-columns {
+        grid-template-columns: 1fr;
+        gap: 0;
+    }
+
+    .create-card-field input,
+    .create-card-field select {
+        height: 49px;
+        font-size: 13px;
+    }
+
+    .create-card-buttons {
+        flex-direction: column-reverse;
+        align-items: stretch;
+    }
+
+    .create-card-buttons button {
+        width: 100%;
+    }
+
+    .create-card-side-panel {
+        padding: 23px 20px;
+    }
+
+    .create-card-side-icon {
+        margin-bottom: 18px;
+    }
+
+    .create-card-side-panel h2 {
+        font-size: 19px;
+    }
+
+    .create-card-side-panel > p {
+        margin-bottom: 20px;
+    }
+
+    .create-card-back-btn {
+        width: 100%;
+    }
+}
+
+/* ACCESSIBILITY */
+
+@media (prefers-reduced-motion: reduce) {
+    .admin-cards-page *,
+    .admin-cards-page *::before,
+    .admin-cards-page *::after {
+        animation-duration: 0.01ms !important;
+        transition-duration: 0.01ms !important;
+    }
+}

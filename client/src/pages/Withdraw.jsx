@@ -1,160 +1,312 @@
-import { useState } from "react";
+
 import { Link } from "react-router-dom";
+import { useAuth } from "../context/useAuth";
 import {
-    useAuth
-} from "../context/useAuth";
+    ArrowLeft,
+    ArrowDownToLine,
+    ShieldCheck,
+    Building2,
+    CreditCard,
+    MapPin,
+    Headphones,
+    ChevronRight,
+    Wallet,
+    Info,
+    Clock,
+    LockKeyhole
+} from "lucide-react";
+
 import "./Withdraw.css";
 
 function Withdraw() {
     const { user } = useAuth();
 
-    const [formData, setFormData] = useState({
-        amount: "",
-        narration: ""
-    });
+    const balance = Number(user?.balance || 0);
 
-    const handleChange = (e) => {
-        setFormData({
-            ...formData,
-            [e.target.name]: e.target.value
-        });
-    };
+    const formatCurrency = (amount) =>
+        new Intl.NumberFormat("en-NG", {
+            style: "currency",
+            currency: "NGN",
+            minimumFractionDigits: 2
+        }).format(amount);
 
-    const handleContinue = (e) => {
-        e.preventDefault();
-
-        if (!formData.amount) {
-            return alert("Please enter an amount.");
-        }
-
-        alert(
-            "Cash withdrawals cannot be completed through the Richieee Banking App.\n\nPlease visit any Richieee Bank branch or use an authorized ATM to withdraw cash."
-        );
-    };
+    const accountNumber = user?.account_number || "Not available";
+    const accountName =
+        user?.full_name ||
+        user?.name ||
+        "Account Holder";
 
     return (
         <div className="withdraw-page">
 
             <header className="withdraw-header">
-
-                <Link
-                    to="/dashboard"
-                    className="back-btn"
-                >
-                    ←
+                <Link to="/dashboard" className="withdraw-back">
+                    <ArrowLeft size={20} />
                 </Link>
 
-                <div>
-                    <span className="page-label">
-                        Banking
-                    </span>
-
-                    <h1>
-                        Withdraw Funds
-                    </h1>
+                <div className="withdraw-header-title">
+                    <span>SKYRAVON BANK</span>
+                    <h1>Withdraw Funds</h1>
                 </div>
 
+                <div className="withdraw-header-icon">
+                    <Wallet size={21} />
+                </div>
             </header>
 
-            <div className="withdraw-card">
+            <main className="withdraw-container">
 
-                <div className="balance-card">
+                <section className="withdraw-intro">
+                    <div>
+                        <span className="withdraw-eyebrow">
+                            ACCOUNT SERVICES
+                        </span>
 
-                    <span>
-                        Available Balance
-                    </span>
-
-                    <h2>
-                        ₦{Number(user?.balance || 0).toLocaleString()}
-                    </h2>
-
-                    <small>
-                        Account No: {user?.account_number}
-                    </small>
-
-                </div>
-
-                {/* <form onSubmit={handleContinue}>
-
-                    <div className="form-group">
-
-                        <label>
-                            Withdrawal Amount
-                        </label>
-
-                        <input
-                            type="number"
-                            name="amount"
-                            placeholder="Enter amount"
-                            value={formData.amount}
-                            onChange={handleChange}
-                        />
-
-                    </div>
-
-                    <div className="form-group">
-
-                        <label>
-                            Narration (Optional)
-                        </label>
-
-                        <textarea
-                            rows="4"
-                            name="narration"
-                            placeholder="Purpose of withdrawal"
-                            value={formData.narration}
-                            onChange={handleChange}
-                        />
-
-                    </div>
-
-                    <button
-                        type="submit"
-                        className="continue-btn"
-                    >
-                        Withdrawal Information
-                    </button>
-
-                </form> */}
-
-                <div className="withdraw-notice">
-
-                    <div className="notice-icon">
-                        🏦
-                    </div>
-
-                    <h3>
-                        Cash Withdrawal Notice
-                    </h3>
-
-                    <p>
-                        For your security, cash withdrawals cannot be processed through the Richieee Banking App.
-                    </p>
-
-                    <ul>
-                        <li>Visit any Richieee Bank branch.</li>
-                        <li>Use any Richieee Bank ATM.</li>
-                        <li>You may also use partner ATMs where available.</li>
-                        <li>Carry your debit card or valid identification.</li>
-                        <li>Contact Customer Care if you require assistance.</li>
-                    </ul>
-
-                    <div className="notice-box">
-
-                        <strong>
-                            Why?
-                        </strong>
+                        <h2>Access your money with ease.</h2>
 
                         <p>
-                            Cash withdrawals require physical verification through our ATM or branch network to keep your account secure.
+                            View your available balance and learn how to
+                            securely withdraw cash from your account.
                         </p>
+                    </div>
+
+                    <div className="withdraw-intro-icon">
+                        <ArrowDownToLine size={38} />
+                    </div>
+                </section>
+
+                <div className="withdraw-layout">
+
+                    <div className="withdraw-main-column">
+
+                        <section className="withdraw-balance-card">
+
+                            <div className="withdraw-balance-top">
+                                <span>
+                                    <Wallet size={17} />
+                                    Available Balance
+                                </span>
+
+                                <span className="withdraw-status">
+                                    <span></span>
+                                    Active
+                                </span>
+                            </div>
+
+                            <h2>{formatCurrency(balance)}</h2>
+
+                            <div className="withdraw-balance-bottom">
+                                <div>
+                                    <span>ACCOUNT HOLDER</span>
+                                    <strong>{accountName}</strong>
+                                </div>
+
+                                <div>
+                                    <span>ACCOUNT NUMBER</span>
+                                    <strong>{accountNumber}</strong>
+                                </div>
+                            </div>
+
+                            <div className="withdraw-card-decoration"></div>
+
+                        </section>
+
+                        <section className="withdraw-info-card">
+
+                            <div className="withdraw-section-heading">
+                                <div className="withdraw-heading-icon">
+                                    <Info size={20} />
+                                </div>
+
+                                <div>
+                                    <h3>Cash Withdrawal Information</h3>
+                                    <p>
+                                        Important information about accessing
+                                        your funds.
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div className="withdraw-alert">
+
+                                <div className="withdraw-alert-icon">
+                                    <Building2 size={23} />
+                                </div>
+
+                                <div>
+                                    <strong>
+                                        In-app cash withdrawal unavailable
+                                    </strong>
+
+                                    <p>
+                                        Cash withdrawals cannot currently be
+                                        processed directly through the
+                                        Skyravon Bank mobile or online banking
+                                        platform.
+                                    </p>
+                                </div>
+
+                            </div>
+
+                            <h4 className="withdraw-method-title">
+                                How to withdraw your money
+                            </h4>
+
+                            <div className="withdraw-methods">
+
+                                <div className="withdraw-method">
+                                    <div className="method-icon">
+                                        <Building2 size={21} />
+                                    </div>
+
+                                    <div>
+                                        <strong>Visit a Bank Branch</strong>
+                                        <p>
+                                            Visit a Skyravon Bank branch for
+                                            assistance with cash withdrawal.
+                                        </p>
+                                    </div>
+
+                                    <ChevronRight size={18} />
+                                </div>
+
+                                <div className="withdraw-method">
+                                    <div className="method-icon">
+                                        <CreditCard size={21} />
+                                    </div>
+
+                                    <div>
+                                        <strong>Use an ATM</strong>
+                                        <p>
+                                            Withdraw cash using your debit
+                                            card at an authorized ATM.
+                                        </p>
+                                    </div>
+
+                                    <ChevronRight size={18} />
+                                </div>
+
+                                <div className="withdraw-method">
+                                    <div className="method-icon">
+                                        <MapPin size={21} />
+                                    </div>
+
+                                    <div>
+                                        <strong>Partner ATM Network</strong>
+                                        <p>
+                                            You may also use supported partner
+                                            ATMs where available.
+                                        </p>
+                                    </div>
+
+                                    <ChevronRight size={18} />
+                                </div>
+
+                            </div>
+
+                            <div className="withdraw-reminder">
+                                <ShieldCheck size={21} />
+
+                                <div>
+                                    <strong>Keep your account secure</strong>
+                                    <p>
+                                        Carry your debit card or valid
+                                        identification. Never share your
+                                        PIN, password or OTP with anyone.
+                                    </p>
+                                </div>
+                            </div>
+
+                        </section>
 
                     </div>
 
+                    <aside className="withdraw-sidebar">
+
+                        <section className="withdraw-security-card">
+
+                            <div className="security-icon">
+                                <LockKeyhole size={24} />
+                            </div>
+
+                            <h3>Your security matters</h3>
+
+                            <p>
+                                 Skyravon Bank prioritizes the safety of your
+                                funds. Physical withdrawals require
+                                verification through authorized channels.
+                            </p>
+
+                            <div className="security-feature">
+                                <ShieldCheck size={17} />
+                                Secure transactions
+                            </div>
+
+                            <div className="security-feature">
+                                <LockKeyhole size={17} />
+                                Account protection
+                            </div>
+
+                        </section>
+
+                        <section className="withdraw-help-card">
+
+                            <div className="help-icon">
+                                <Headphones size={23} />
+                            </div>
+
+                            <h3>Need assistance?</h3>
+
+                            <p>
+                                Our customer support team is available to
+                                help with withdrawal enquiries.
+                            </p>
+
+                            <Link
+                                to="/support"
+                                className="withdraw-support-link"
+                            >
+                                Contact Support
+                                <ChevronRight size={17} />
+                            </Link>
+
+                        </section>
+
+                        <section className="withdraw-processing-card">
+
+                            <Clock size={19} />
+
+                            <div>
+                                <strong>Withdrawal availability</strong>
+                                <p>
+                                    Branch and ATM withdrawals are subject
+                                    to their operating hours and applicable
+                                    transaction limits.
+                                </p>
+                            </div>
+
+                        </section>
+
+                    </aside>
+
                 </div>
 
-            </div>
+                <footer className="withdraw-footer">
 
+                    <div>
+                        <p>Banking made simple, secure and convenient.</p>
+                        <strong>SKYRAVON BANK</strong>
+                    </div>
+
+                    <div className="withdraw-footer-links">
+                        <Link to="/privacy">Privacy</Link>
+                        <Link to="/terms">Terms</Link>
+                        <Link to="/support">Support</Link>
+                    </div>
+
+                </footer>
+
+            </main>
         </div>
     );
 }

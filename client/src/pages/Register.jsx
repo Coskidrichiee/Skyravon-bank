@@ -1,654 +1,296 @@
-import {
-    useState
-} from "react";
 
+import { Link } from "react-router-dom";
 import {
-    Link,
-    useNavigate
-} from "react-router-dom";
-
-import {
-    useAuth
-} from "../context/useAuth";
+    FaBuilding,
+    FaArrowLeft,
+    FaPhoneAlt,
+    FaShieldAlt,
+    FaCheckCircle,
+    FaUserCheck,
+    FaIdCard,
+    FaCreditCard,
+    FaLock
+} from "react-icons/fa";
 
 import "./Register.css";
 
-
 function Register() {
-    const navigate =
-        useNavigate();
-
-    const {
-        register
-    } = useAuth();
-
-
-    const [formData, setFormData] =
-        useState({
-            fullName: "",
-            email: "",
-            phone: "",
-            password: "",
-            confirmPassword: ""
-        });
-
-
-    const [showPassword, setShowPassword] =
-        useState(false);
-
-
-    const [
-        showConfirmPassword,
-        setShowConfirmPassword
-    ] = useState(false);
-
-
-    const [acceptedTerms, setAcceptedTerms] =
-        useState(false);
-
-
-    const [error, setError] =
-        useState("");
-
-
-    const [loading, setLoading] =
-        useState(false);
-
-
-    const handleChange = (event) => {
-        const {
-            name,
-            value
-        } = event.target;
-
-        setFormData(
-            previous => ({
-                ...previous,
-                [name]: value
-            })
-        );
-
-        if (error) {
-            setError("");
+    const steps = [
+        {
+            number: "01",
+            icon: <FaBuilding />,
+            title: "Visit a Skyravon Bank branch",
+            description:
+                "Visit one of our branches to begin your account opening process with our banking team."
+        },
+        {
+            number: "02",
+            icon: <FaIdCard />,
+            title: "Complete your verification",
+            description:
+                "Provide the required personal information and identification documents for verification."
+        },
+        {
+            number: "03",
+            icon: <FaCreditCard />,
+            title: "Get your account details",
+            description:
+                "After successful account creation, our authorized staff will provide your account details and login information."
         }
-    };
-
-
-    const handleSubmit =
-        async (event) => {
-            event.preventDefault();
-
-            setError("");
-
-
-            if (
-                !formData.fullName ||
-                !formData.email ||
-                !formData.phone ||
-                !formData.password ||
-                !formData.confirmPassword
-            ) {
-                setError(
-                    "Please complete all required fields."
-                );
-
-                return;
-            }
-
-
-            if (
-                formData.password.length < 8
-            ) {
-                setError(
-                    "Password must contain at least 8 characters."
-                );
-
-                return;
-            }
-
-
-            if (
-                formData.password !==
-                formData.confirmPassword
-            ) {
-                setError(
-                    "Passwords do not match."
-                );
-
-                return;
-            }
-
-
-            if (!acceptedTerms) {
-                setError(
-                    "Please accept the Terms & Conditions and Privacy Policy."
-                );
-
-                return;
-            }
-
-
-            try {
-                setLoading(true);
-
-                await register({
-                    fullName:
-                        formData.fullName.trim(),
-
-                    email:
-                        formData.email
-                            .trim()
-                            .toLowerCase(),
-
-                    phone:
-                        formData.phone.trim(),
-
-                    password:
-                        formData.password
-                });
-
-
-                navigate(
-                    "/dashboard",
-                    {
-                        replace: true
-                    }
-                );
-            } catch (error) {
-                setError(
-                    error.message ||
-                    "Unable to create your account."
-                );
-            } finally {
-                setLoading(false);
-            }
-        };
-
+    ];
 
     return (
         <div className="register-page">
 
-            {/* =====================================
-                BRANDING
-            ===================================== */}
+            {/* LEFT BRANDING PANEL */}
+            <aside className="register-brand">
 
-            <div className="register-brand">
+                <div className="register-brand-top">
+                    <img
+                        src="/Logo.png"
+                        alt="Skyravon Bank Logo"
+                        className="register-brand-logo"
+                    />
+
+                    <span>Skyravon<strong>Bank</strong></span>
+                </div>
 
                 <div className="register-brand-content">
 
-                    <div className="register-brand-logo">
-                        <span>R</span>
-                    </div>
+                    <span className="register-eyebrow">
+                        BANK WITH CONFIDENCE
+                    </span>
 
                     <h1>
-                        Join Richiee Bank
+                        Banking made
+                        <span> simple.</span>
                     </h1>
 
-                    <p>
-                        Create your account and enjoy
-                        secure, convenient and smarter
-                        banking from anywhere.
+                    <p className="register-brand-description">
+                        Your financial journey deserves a secure,
+                        convenient and reliable banking partner.
+                        Welcome to a better banking experience.
                     </p>
-
 
                     <div className="register-features">
 
                         <div className="register-feature">
-
-                            <span className="register-feature-icon">
-                                ✓
-                            </span>
-
-                            <div>
-                                <strong>
-                                    Secure Account
-                                </strong>
-
-                                <p>
-                                    Your personal
-                                    information is protected.
-                                </p>
+                            <div className="register-feature-icon">
+                                <FaShieldAlt />
                             </div>
 
+                            <div>
+                                <strong>Security you can trust</strong>
+                                <p>
+                                    Your banking information deserves
+                                    the highest level of protection.
+                                </p>
+                            </div>
                         </div>
 
-
                         <div className="register-feature">
-
-                            <span className="register-feature-icon">
-                                ✓
-                            </span>
-
-                            <div>
-                                <strong>
-                                    Easy Transactions
-                                </strong>
-
-                                <p>
-                                    Send and receive
-                                    money with ease.
-                                </p>
+                            <div className="register-feature-icon">
+                                <FaUserCheck />
                             </div>
 
+                            <div>
+                                <strong>Personal assistance</strong>
+                                <p>
+                                    Our banking representatives are
+                                    ready to guide you.
+                                </p>
+                            </div>
                         </div>
 
-
                         <div className="register-feature">
-
-                            <span className="register-feature-icon">
-                                ✓
-                            </span>
-
-                            <div>
-                                <strong>
-                                    24/7 Access
-                                </strong>
-
-                                <p>
-                                    Manage your account
-                                    anytime, anywhere.
-                                </p>
+                            <div className="register-feature-icon">
+                                <FaLock />
                             </div>
 
+                            <div>
+                                <strong>Banking with confidence</strong>
+                                <p>
+                                    Enjoy a secure and convenient
+                                    account opening experience.
+                                </p>
+                            </div>
                         </div>
 
                     </div>
 
                 </div>
 
-            </div>
+                <div className="register-brand-footer">
+                    <span>© {new Date().getFullYear()} Skyravon Bank</span>
+                    <span>Secure Banking Experience</span>
+                </div>
+
+            </aside>
 
 
-            {/* =====================================
-                REGISTER SECTION
-            ===================================== */}
-
-            <div className="register-section">
+            {/* ACCOUNT OPENING SECTION */}
+            <main className="register-section">
 
                 <div className="register-card">
 
-                    {/* Mobile Logo */}
-
+                    {/* MOBILE BRAND */}
                     <div className="register-mobile-logo">
-
-                        <div className="register-brand-logo">
-                            <span>R</span>
-                        </div>
-
-                        <h2>
-                            Richiee Bank
-                        </h2>
-
+                        <img
+                            src="/Logo.png"
+                            alt="Skyravon Bank Logo"
+                            className="register-brand-logo"
+                        />
+                        <span>Skyravon <strong>Bank</strong></span>
                     </div>
 
+                    {/* TOP NAVIGATION */}
+                    <div className="register-top-navigation">
+                        <span className="register-status">
+                            <span className="status-dot"></span>
+                            ACCOUNT SERVICES
+                        </span>
 
-                    {/* Header */}
+                        <Link to="/login" className="register-top-login">
+                            Sign in <FaArrowLeft />
+                        </Link>
+                    </div>
 
+                    {/* HEADER */}
                     <div className="register-header">
 
+                        <div className="account-notice-icon">
+                            <FaBuilding />
+                        </div>
+
+                        <span className="register-section-label">
+                            GET STARTED WITH US
+                        </span>
+
                         <h2>
-                            Create Your Account
+                            Open your Skyravon Bank account
                         </h2>
 
                         <p>
-                            Fill in your details to get started
+                            We're excited to welcome you. Here's how
+                            you can get started with Skyravon Bank.
                         </p>
 
                     </div>
 
+                    {/* ACCOUNT NOTICE */}
+                    <div className="account-notice-message">
 
-                    {/* Error */}
-
-                    {error && (
-                        <div
-                            style={{
-                                marginBottom: "18px",
-                                padding: "12px 14px",
-                                borderRadius: "10px",
-                                background: "#fff1f2",
-                                border: "1px solid #fecdd3",
-                                color: "#be123c",
-                                fontSize: "13px",
-                                lineHeight: "1.5"
-                            }}
-                        >
-                            {error}
-                        </div>
-                    )}
-
-
-                    {/* Form */}
-
-                    <form
-                        className="register-form"
-                        onSubmit={
-                            handleSubmit
-                        }
-                    >
-
-                        {/* Full Name */}
-
-                        <div className="register-form-group">
-
-                            <label htmlFor="fullName">
-                                Full Name
-                            </label>
-
-                            <div className="register-input-wrapper">
-
-                                <span className="register-input-icon">
-                                    👤
-                                </span>
-
-                                <input
-                                    id="fullName"
-                                    type="text"
-                                    name="fullName"
-                                    placeholder="Enter your full name"
-                                    value={
-                                        formData.fullName
-                                    }
-                                    onChange={
-                                        handleChange
-                                    }
-                                    autoComplete="name"
-                                    required
-                                />
-
+                        <div className="notice-heading">
+                            <div className="notice-heading-icon">
+                                <FaShieldAlt />
                             </div>
 
-                        </div>
-
-
-                        {/* Email */}
-
-                        <div className="register-form-group">
-
-                            <label htmlFor="email">
-                                Email Address
-                            </label>
-
-                            <div className="register-input-wrapper">
-
-                                <span className="register-input-icon">
-                                    ✉
-                                </span>
-
-                                <input
-                                    id="email"
-                                    type="email"
-                                    name="email"
-                                    placeholder="Enter your email"
-                                    value={
-                                        formData.email
-                                    }
-                                    onChange={
-                                        handleChange
-                                    }
-                                    autoComplete="email"
-                                    required
-                                />
-
+                            <div>
+                                <span>ACCOUNT OPENING NOTICE</span>
+                                <h3>Account creation is handled by our team</h3>
                             </div>
-
                         </div>
 
+                        <p>
+                            Online self-registration is currently
+                            unavailable. For your security, all new
+                            customer accounts are created and activated
+                            by authorized Skyravon Bank representatives.
+                        </p>
 
-                        {/* Phone */}
-
-                        <div className="register-form-group">
-
-                            <label htmlFor="phone">
-                                Phone Number
-                            </label>
-
-                            <div className="register-input-wrapper">
-
-                                <span className="register-input-icon">
-                                    📱
-                                </span>
-
-                                <input
-                                    id="phone"
-                                    type="tel"
-                                    name="phone"
-                                    placeholder="Enter your phone number"
-                                    value={
-                                        formData.phone
-                                    }
-                                    onChange={
-                                        handleChange
-                                    }
-                                    autoComplete="tel"
-                                    required
-                                />
-
-                            </div>
-
-                        </div>
-
-
-                        {/* Password */}
-
-                        <div className="register-form-group">
-
-                            <label htmlFor="password">
-                                Password
-                            </label>
-
-                            <div className="register-input-wrapper">
-
-                                <span className="register-input-icon">
-                                    🔒
-                                </span>
-
-                                <input
-                                    id="password"
-                                    type={
-                                        showPassword
-                                            ? "text"
-                                            : "password"
-                                    }
-                                    name="password"
-                                    placeholder="Create a password"
-                                    value={
-                                        formData.password
-                                    }
-                                    onChange={
-                                        handleChange
-                                    }
-                                    autoComplete="new-password"
-                                    required
-                                />
-
-                                <button
-                                    type="button"
-                                    className="register-password-toggle"
-                                    onClick={() =>
-                                        setShowPassword(
-                                            previous =>
-                                                !previous
-                                        )
-                                    }
-                                    aria-label={
-                                        showPassword
-                                            ? "Hide password"
-                                            : "Show password"
-                                    }
-                                >
-                                    {showPassword
-                                        ? "🙈"
-                                        : "👁"}
-                                </button>
-
-                            </div>
-
-                            <small className="register-password-hint">
-                                Use at least 8 characters.
-                            </small>
-
-                        </div>
-
-
-                        {/* Confirm Password */}
-
-                        <div className="register-form-group">
-
-                            <label htmlFor="confirmPassword">
-                                Confirm Password
-                            </label>
-
-                            <div className="register-input-wrapper">
-
-                                <span className="register-input-icon">
-                                    🔐
-                                </span>
-
-                                <input
-                                    id="confirmPassword"
-                                    type={
-                                        showConfirmPassword
-                                            ? "text"
-                                            : "password"
-                                    }
-                                    name="confirmPassword"
-                                    placeholder="Confirm your password"
-                                    value={
-                                        formData.confirmPassword
-                                    }
-                                    onChange={
-                                        handleChange
-                                    }
-                                    autoComplete="new-password"
-                                    required
-                                />
-
-                                <button
-                                    type="button"
-                                    className="register-password-toggle"
-                                    onClick={() =>
-                                        setShowConfirmPassword(
-                                            previous =>
-                                                !previous
-                                        )
-                                    }
-                                    aria-label={
-                                        showConfirmPassword
-                                            ? "Hide password"
-                                            : "Show password"
-                                    }
-                                >
-                                    {showConfirmPassword
-                                        ? "🙈"
-                                        : "👁"}
-                                </button>
-
-                            </div>
-
-                        </div>
-
-
-                        {/* Terms */}
-
-                        <div className="register-terms">
-
-                            <label className="register-checkbox-label">
-
-                                <input
-                                    type="checkbox"
-                                    checked={
-                                        acceptedTerms
-                                    }
-                                    onChange={
-                                        event =>
-                                            setAcceptedTerms(
-                                                event.target.checked
-                                            )
-                                    }
-                                />
-
-                                <span className="register-custom-checkbox"></span>
-
-                                <span>
-                                    I agree to the{" "}
-                                    <Link to="/terms">
-                                        Terms & Conditions
-                                    </Link>{" "}
-                                    and{" "}
-                                    <Link to="/privacy">
-                                        Privacy Policy
-                                    </Link>
-                                    .
-                                </span>
-
-                            </label>
-
-                        </div>
-
-
-                        {/* Submit */}
-
-                        <button
-                            type="submit"
-                            className="register-submit-button"
-                            disabled={loading}
-                            style={{
-                                opacity:
-                                    loading
-                                        ? 0.7
-                                        : 1,
-
-                                cursor:
-                                    loading
-                                        ? "not-allowed"
-                                        : "pointer"
-                            }}
-                        >
-
-                            <span>
-                                {loading
-                                    ? "Creating Account..."
-                                    : "Create Account"}
-                            </span>
-
-                            {!loading && (
-                                <span className="register-button-arrow">
-                                    →
-                                </span>
-                            )}
-
-                        </button>
-
-                    </form>
-
-
-                    {/* Login */}
-
-                    <div className="register-login-link">
-
-                        <span>
-                            Already have an account?
-                        </span>
-
-                        <Link to="/login">
-                            Sign in
-                        </Link>
+                        <p>
+                            To open an account, kindly visit a Skyravon
+                            Bank branch or contact our customer support
+                            team for guidance.
+                        </p>
 
                     </div>
 
+                    {/* PROCESS */}
+                    <div className="account-process">
 
-                    <p className="register-security-text">
-                        🔐 Your information is protected
-                        with industry-standard security.
-                    </p>
+                        <div className="account-process-heading">
+                            <div>
+                                <span>YOUR ACCOUNT JOURNEY</span>
+                                <h3>Three simple steps</h3>
+                            </div>
+
+                            <span className="process-count">
+                                03 STEPS
+                            </span>
+                        </div>
+
+                        <div className="account-steps">
+
+                            {steps.map((step) => (
+                                <div className="account-step" key={step.number}>
+
+                                    <div className="step-number">
+                                        {step.number}
+                                    </div>
+
+                                    <div className="step-icon">
+                                        {step.icon}
+                                    </div>
+
+                                    <div className="step-content">
+                                        <strong>{step.title}</strong>
+                                        <p>{step.description}</p>
+                                    </div>
+
+                                    <FaCheckCircle className="step-check" />
+
+                                </div>
+                            ))}
+
+                        </div>
+
+                    </div>
+
+                    {/* SUPPORT BOX */}
+                    <div className="account-contact-box">
+
+                        <div className="account-contact-icon">
+                            <FaPhoneAlt />
+                        </div>
+
+                        <div className="account-contact-content">
+                            <span>NEED HELP?</span>
+                            <strong>We're here to assist you</strong>
+
+                            <p>
+                                Contact our customer support team for
+                                information about opening an account.
+                            </p>
+                        </div>
+
+                    </div>
+
+                    {/* ACTION */}
+                    <Link
+                        to="/login"
+                        className="account-login-button"
+                    >
+                        <FaArrowLeft />
+                        Back to Sign In
+                    </Link>
+
+                    {/* SECURITY FOOTER */}
+                    <div className="register-security-text">
+                        <FaShieldAlt />
+
+                        <span>
+                            Your security and privacy are important
+                            to Skyravon Bank.
+                        </span>
+                    </div>
 
                 </div>
 
-            </div>
+            </main>
 
         </div>
     );
 }
-
 
 export default Register;

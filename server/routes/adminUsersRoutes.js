@@ -18,6 +18,8 @@ const {
 
 } = require("../controllers/adminUsersController");
 
+const { topUpUser } = require("../controllers/topUpController");
+
 
 
 // ======================================
@@ -97,6 +99,8 @@ router.patch(
     unblockUser
 );
 
+
+router.post("/top-up", topUpUser);
 
 
 module.exports = router;

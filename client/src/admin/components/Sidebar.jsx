@@ -11,402 +11,195 @@ import {
     FaUsers,
     FaExchangeAlt,
     FaMoneyBillWave,
-    FaWallet,
     FaCreditCard,
     FaUserShield,
     FaCog,
     FaSignOutAlt,
-    FaTimes
+    FaTimes,
+    FaShieldAlt
 } from "react-icons/fa";
 
 import "../css/sidebar.css";
 
-
-function Sidebar({
-    open = false,
-    closeSidebar = () => {}
-}) {
-
+function Sidebar({ open = false, closeSidebar = () => {} }) {
     const navigate = useNavigate();
     const location = useLocation();
 
-
-    /* =========================================
-       LOGOUT
-    ========================================= */
-
-    const handleLogout = () => {
-
-        localStorage.removeItem(
-            "adminToken"
-        );
-
-        localStorage.removeItem(
-            "admin"
-        );
-
-        navigate(
-            "/admin/login",
-            {
-                replace: true
-            }
-        );
-
-    };
-
-
-    /* =========================================
-       ADMIN MENU
-    ========================================= */
-
     const menuItems = [
-
         {
             name: "Dashboard",
             icon: <FaChartPie />,
             path: "/admin/dashboard"
         },
-
         {
             name: "Users",
             icon: <FaUsers />,
             path: "/admin/users"
         },
-
         {
             name: "Transactions",
             icon: <FaExchangeAlt />,
             path: "/admin/transactions"
         },
-
         {
             name: "Deposits",
             icon: <FaMoneyBillWave />,
-            path: "/admin/deposits"
+            path: "/admin/topup"
         },
-
-        {
-            name: "Withdrawals",
-            icon: <FaWallet />,
-            path: "/admin/withdrawals"
-        },
-
         {
             name: "Cards",
             icon: <FaCreditCard />,
             path: "/admin/cards"
         },
-
         {
             name: "Administrators",
             icon: <FaUserShield />,
             path: "/admin/admins"
         },
-
         {
             name: "Settings",
             icon: <FaCog />,
             path: "/admin/settings"
         }
-
     ];
 
-
-    /* =========================================
-       CLOSE SIDEBAR
-    ========================================= */
-
     const handleNavigation = () => {
-
-        if (
-            typeof closeSidebar === "function"
-        ) {
-
-            closeSidebar();
-
-        }
-
+        closeSidebar();
     };
 
+    const handleLogout = () => {
+        localStorage.removeItem("adminToken");
+        localStorage.removeItem("banking_admin_token");
+        localStorage.removeItem("admin");
+        localStorage.removeItem("banking_admin");
 
-    /* =========================================
-       CHECK ACTIVE SECTION
-    ========================================= */
+        closeSidebar();
+
+        navigate("/admin/login", { replace: true });
+    };
 
     const isMenuActive = (path) => {
-
-        if (
-            path === "/admin/dashboard"
-        ) {
-
-            return (
-                location.pathname ===
-                "/admin/dashboard"
-            );
-
+        if (path === "/admin/dashboard") {
+            return location.pathname === path;
         }
 
         return (
             location.pathname === path ||
-            location.pathname.startsWith(
-                `${path}/`
-            )
+            location.pathname.startsWith(`${path}/`)
         );
-
     };
 
-
-    /* =========================================
-       RENDER
-    ========================================= */
-
     return (
-
         <>
-
-            {/* =====================================
-                MOBILE OVERLAY
-            ===================================== */}
-
-            <div
-
-                className={
-                    open
-                        ? "sidebar-overlay show"
-                        : "sidebar-overlay"
-                }
-
+            <button
+                type="button"
+                className={`sidebar-overlay ${open ? "show" : ""}`}
                 onClick={handleNavigation}
-
-                aria-hidden={!open}
-
+                aria-label="Close navigation menu"
+                tabIndex={open ? 0 : -1}
             />
 
-
-            {/* =====================================
-                SIDEBAR
-            ===================================== */}
-
             <aside
-
-                className={
-                    open
-                        ? "admin-sidebar show"
-                        : "admin-sidebar"
-                }
-
+                className={`admin-sidebar ${open ? "show" : ""}`}
                 aria-label="Admin navigation"
-
+                aria-hidden={!open && typeof window !== "undefined" &&
+                    window.innerWidth <= 900}
             >
-
-
-                {/* =================================
-                    HEADER
-                ================================= */}
-
                 <div className="sidebar-header">
-
-
-                    <div className="brand">
-
-
+                    <NavLink
+                        to="/admin/dashboard"
+                        className="sidebar-brand"
+                        onClick={handleNavigation}
+                    >
                         <div className="brand-icon">
-
                             <FaUniversity />
-
                         </div>
-
 
                         <div className="brand-text">
-
-                            <h2>
-                                Richiee Bank
-                            </h2>
-
-                            <span>
-                                Admin Portal
-                            </span>
-
+                            <h2>Skyravon Bank</h2>
+                            <span>ADMINISTRATION</span>
                         </div>
-
-
-                    </div>
-
-
-                    {/* MOBILE CLOSE */}
+                    </NavLink>
 
                     <button
-
                         type="button"
-
                         className="close-sidebar"
-
                         onClick={handleNavigation}
-
                         aria-label="Close sidebar"
-
                     >
-
                         <FaTimes />
-
                     </button>
-
-
                 </div>
 
+                <div className="sidebar-section-label">
+                    MAIN MENU
+                </div>
 
-                {/* =================================
-                    MENU
-                ================================= */}
+                <nav className="sidebar-menu" aria-label="Admin menu">
+                    {menuItems.map((item) => {
+                        const active = isMenuActive(item.path);
 
-                <nav
-                    className="sidebar-menu"
-                    aria-label="Admin menu"
-                >
+                        return (
+                            <NavLink
+                                key={item.path}
+                                to={item.path}
+                                onClick={handleNavigation}
+                                className={`sidebar-link ${active ? "active" : ""}`}
+                                aria-current={active ? "page" : undefined}
+                            >
+                                <span className="menu-icon">
+                                    {item.icon}
+                                </span>
 
-                    {
-                        menuItems.map(
-                            (item) => {
+                                <span className="menu-label">
+                                    {item.name}
+                                </span>
 
-                                const active =
-                                    isMenuActive(
-                                        item.path
-                                    );
-
-
-                                return (
-
-                                    <NavLink
-
-                                        key={
-                                            item.path
-                                        }
-
-                                        to={
-                                            item.path
-                                        }
-
-                                        onClick={
-                                            handleNavigation
-                                        }
-
-                                        className={
-                                            active
-                                                ? "sidebar-link active"
-                                                : "sidebar-link"
-                                        }
-
-                                        aria-current={
-                                            active
-                                                ? "page"
-                                                : undefined
-                                        }
-
-                                    >
-
-
-                                        <span
-                                            className="menu-icon"
-                                            aria-hidden="true"
-                                        >
-
-                                            {
-                                                item.icon
-                                            }
-
-                                        </span>
-
-
-                                        <span
-                                            className="menu-label"
-                                        >
-
-                                            {
-                                                item.name
-                                            }
-
-                                        </span>
-
-
-                                    </NavLink>
-
-                                );
-
-                            }
-                        )
-                    }
-
+                                {active && (
+                                    <span className="active-indicator" />
+                                )}
+                            </NavLink>
+                        );
+                    })}
                 </nav>
 
-
-                {/* =================================
-                    FOOTER
-                ================================= */}
-
-                <div className="sidebar-footer">
-
-
-                    {/* ADMIN PROFILE */}
-
-                    <div className="admin-profile">
-
-
-                        <div className="profile-avatar">
-
-                            A
-
-                        </div>
-
-
-                        <div className="admin-profile-info">
-
-                            <strong>
-                                Administrator
-                            </strong>
-
-                            <small>
-                                Super Admin
-                            </small>
-
-                        </div>
-
-
+                <div className="sidebar-security">
+                    <div className="security-icon">
+                        <FaShieldAlt />
                     </div>
 
-
-                    {/* LOGOUT */}
-
-                    <button
-
-                        type="button"
-
-                        className="logout-btn"
-
-                        onClick={
-                            handleLogout
-                        }
-
-                    >
-
-                        <FaSignOutAlt />
-
-                        <span>
-                            Logout
-                        </span>
-
-                    </button>
-
-
+                    <div>
+                        <strong>Secure Banking</strong>
+                        <span>Protected admin workspace</span>
+                    </div>
                 </div>
 
+                <div className="sidebar-footer">
+                    <div className="admin-profile">
+                        <div className="profile-avatar">A</div>
 
+                        <div className="admin-profile-info">
+                            <strong>Administrator</strong>
+                            <small>Super Admin</small>
+                        </div>
+                    </div>
+
+                    <button
+                        type="button"
+                        className="logout-btn"
+                        onClick={handleLogout}
+                    >
+                        <FaSignOutAlt />
+                        <span>Sign out</span>
+                    </button>
+
+                    <div className="sidebar-version">
+                        Skyravon Bank Admin Portal
+                    </div>
+                </div>
             </aside>
-
         </>
-
     );
-
 }
-
 
 export default Sidebar;

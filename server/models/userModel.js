@@ -9,7 +9,15 @@ const createUser = async ({
     email,
     phone,
     accountNumber,
-    passwordHash
+    passwordHash,
+    transactionPin,
+    balance = 0,
+    address = null,
+    city = null,
+    state = null,
+    country = "Nigeria",
+    status = "active",
+    profilePicture = null
 }) => {
 
     const [result] = await pool.execute(
@@ -20,16 +28,32 @@ const createUser = async ({
             email,
             phone,
             account_number,
-            password_hash
+            password_hash,
+            balance,
+            address,
+            city,
+            state,
+            country,
+            profile_picture,
+            status,
+            transaction_pin
         )
-        VALUES (?, ?, ?, ?, ?)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         `,
         [
             fullName,
             email,
             phone,
             accountNumber,
-            passwordHash
+            passwordHash,
+            balance,
+            address,
+            city,
+            state,
+            country,
+            profilePicture,
+            status,
+            transactionPin
         ]
     );
 
@@ -77,6 +101,8 @@ const findUserById = async (id) => {
             state,
             country,
             profile_picture,
+            status,
+            transaction_pin,
             created_at,
             updated_at
         FROM users

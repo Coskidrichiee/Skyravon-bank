@@ -1692,7 +1692,7 @@ const formatCurrency = (amount) => {
 
                     <span>
                         © {new Date().getFullYear()}
-                        {" "}Richiee Bank
+                        {" "}Skyravon Bank
                     </span>
 
 

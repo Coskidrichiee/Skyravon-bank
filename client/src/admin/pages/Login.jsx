@@ -1,7 +1,7 @@
-// client/src/admin/pages/Login.jsx
+
 
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { loginAdmin } from "../../services/api";
 
 import {
@@ -12,509 +12,522 @@ import {
     FaEyeSlash,
     FaShieldAlt,
     FaArrowRight,
-    FaSpinner
+    FaSpinner,
+    FaCheckCircle,
+    FaUserShield,
+    FaFingerprint
 } from "react-icons/fa";
 
 import "../css/login.css";
 
 function Login() {
-
     const navigate = useNavigate();
 
     const [showPassword, setShowPassword] = useState(false);
-
     const [loading, setLoading] = useState(false);
-
     const [error, setError] = useState("");
-
     const [success, setSuccess] = useState("");
 
     const [formData, setFormData] = useState({
-
         email: "",
-
         password: "",
-
         remember: false
-
     });
 
-    // =========================================
-    // Handle Input
-    // =========================================
-
+    // Handle form input changes
     const handleChange = (e) => {
-
         const { name, value, type, checked } = e.target;
 
         setFormData((prev) => ({
-
             ...prev,
-
-            [name]:
-                type === "checkbox"
-                    ? checked
-                    : value
-
+            [name]: type === "checkbox" ? checked : value
         }));
 
+        if (error) setError("");
+        if (success) setSuccess("");
     };
 
-    // =========================================
-    // Login
-    // =========================================
-
+    // Handle administrator login
     const handleSubmit = async (e) => {
+        e.preventDefault();
 
-    e.preventDefault();
+        setError("");
+        setSuccess("");
 
-    setError("");
+        const email = formData.email.trim().toLowerCase();
 
-    setSuccess("");
-
-
-    if (
-        !formData.email ||
-        !formData.password
-    ) {
-
-        return setError(
-            "Please enter your email and password."
-        );
-
-    }
-
-
-    try {
-
-        setLoading(true);
-
-
-        const data = await loginAdmin({
-
-            email:
-                formData.email
-                    .trim()
-                    .toLowerCase(),
-
-            password:
-                formData.password
-
-        });
-
-
-        if (!data.success) {
-
-            throw new Error(
-
-                data.message ||
-                "Admin login failed."
-
+        if (!email || !formData.password) {
+            setError(
+                "Please enter your email address and password."
             );
-
+            return;
         }
 
+        try {
+            setLoading(true);
 
-        /*
-        ==========================================
-        SAVE ADMIN SESSION
-        ==========================================
-        */
+            const data = await loginAdmin({
+                email,
+                password: formData.password
+            });
 
-        localStorage.setItem(
+            if (!data?.success || !data?.token || !data?.admin) {
+                throw new Error(
+                    data?.message || "Admin login failed."
+                );
+            }
 
-            "adminToken",
-
-            data.token
-
-        );
-
-
-        localStorage.setItem(
-
-            "banking_admin_token",
-
-            data.token
-
-        );
-
-
-        localStorage.setItem(
-
-            "admin",
-
-            JSON.stringify(
-                data.admin
-            )
-
-        );
-
-
-        localStorage.setItem(
-
-            "banking_admin",
-
-            JSON.stringify(
-                data.admin
-            )
-
-        );
-
-
-        if (formData.remember) {
+            // Save administrator authentication
+            localStorage.setItem("adminToken", data.token);
+            localStorage.setItem("banking_admin_token", data.token);
 
             localStorage.setItem(
-
-                "rememberAdmin",
-
-                "true"
-
+                "admin",
+                JSON.stringify(data.admin)
             );
 
+            localStorage.setItem(
+                "banking_admin",
+                JSON.stringify(data.admin)
+            );
+
+            // Remember administrator preference
+            if (formData.remember) {
+                localStorage.setItem("rememberAdmin", "true");
+            } else {
+                localStorage.removeItem("rememberAdmin");
+            }
+
+            setSuccess(
+                "Authentication successful. Redirecting..."
+            );
+
+            navigate("/admin/dashboard", {
+                replace: true
+            });
+
+        } catch (err) {
+            console.error("Admin login error:", err);
+
+            setError(
+                err.response?.data?.message ||
+                err.message ||
+                "Unable to connect to server. Please try again."
+            );
+
+        } finally {
+            setLoading(false);
         }
-
-        else {
-
-            localStorage.removeItem(
-                "rememberAdmin"
-            );
-
-        }
-
-
-        setSuccess(
-            "Login successful."
-        );
-
-
-        setTimeout(() => {
-
-            navigate(
-                "/admin/dashboard"
-            );
-
-        }, 500);
-
-
-    }
-
-    catch (err) {
-
-        console.error(
-            "Admin login error:",
-            err
-        );
-
-
-        setError(
-
-            err.response?.data?.message ||
-
-            err.message ||
-
-            "Unable to connect to server."
-
-        );
-
-    }
-
-    finally {
-
-        setLoading(false);
-
-    }
-
-};
+    };
 
     return (
+        <main className="admin-login-page">
 
-        <div className="admin-login-page">
-
-            <div className="login-overlay"></div>
+            {/* BACKGROUND */}
+            <div className="admin-login-background">
+                <span className="login-orb login-orb-one"></span>
+                <span className="login-orb login-orb-two"></span>
+                <span className="login-grid-pattern"></span>
+            </div>
 
             <div className="login-container">
 
-                {/* LEFT */}
+                {/* LEFT BRANDING PANEL */}
+                <section className="login-left">
 
-                <div className="login-left">
+                    <div className="admin-brand">
 
-                    <div className="bank-logo">
+                        <div className="bank-logo">
+                            <FaUniversity />
+                        </div>
 
-                        <FaUniversity />
+                        <div className="admin-brand-name">
+                            <strong>Skyravon Bank</strong>
+                            <span>ADMINISTRATION</span>
+                        </div>
 
                     </div>
 
-                    <h1>
+                    <div className="login-left-content">
 
-                        Richiee Bank
+                        <span className="admin-welcome-label">
+                            <span className="welcome-dot"></span>
+                            ADMINISTRATOR ACCESS
+                        </span>
 
-                    </h1>
+                        <h1>
+                            Banking control.
+                            <span> Simplified.</span>
+                        </h1>
 
-                    <h2>
+                        <p className="login-description">
+                            Manage your banking operations from one
+                            secure and intelligent administration
+                            platform.
+                        </p>
 
-                        Administration Portal
+                        {/* ADMIN CAPABILITIES */}
+                        <div className="admin-capabilities">
 
-                    </h2>
+                            <div className="capability-item">
 
-                    <p>
+                                <div className="capability-icon">
+                                    <FaUserShield />
+                                </div>
 
-                        Secure administrator access for
-                        managing customers, balances,
-                        transfers, deposits, withdrawals,
-                        transactions and cards.
+                                <div>
+                                    <strong>
+                                        Customer Management
+                                    </strong>
 
-                    </p>
+                                    <span>
+                                        Manage customer accounts and
+                                        banking profiles.
+                                    </span>
+                                </div>
 
-                    <div className="security-card">
+                            </div>
 
-                        <FaShieldAlt />
+                            <div className="capability-item">
 
-                        <div>
+                                <div className="capability-icon">
+                                    <FaFingerprint />
+                                </div>
 
-                            <strong>
+                                <div>
+                                    <strong>
+                                        Transaction Control
+                                    </strong>
 
-                                Secure Authentication
+                                    <span>
+                                        Monitor deposits, withdrawals
+                                        and transfers.
+                                    </span>
+                                </div>
 
-                            </strong>
+                            </div>
 
-                            <span>
+                            <div className="capability-item">
 
-                                JWT Authentication,
-                                encrypted passwords and
-                                role-based authorization.
+                                <div className="capability-icon">
+                                    <FaShieldAlt />
+                                </div>
 
+                                <div>
+                                    <strong>
+                                        Secure Administration
+                                    </strong>
+
+                                    <span>
+                                        Access protected administrative
+                                        banking operations.
+                                    </span>
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                        {/* SECURITY CARD */}
+                        <div className="admin-security-card">
+
+                            <div className="security-icon">
+                                <FaShieldAlt />
+                            </div>
+
+                            <div>
+                                <strong>
+                                    Protected Admin Access
+                                </strong>
+
+                                <p>
+                                    Sign in using your authorized
+                                    administrator credentials.
+                                </p>
+                            </div>
+
+                            <FaCheckCircle className="security-check" />
+
+                        </div>
+
+                    </div>
+
+                    {/* LEFT FOOTER */}
+                    <div className="login-left-footer">
+
+                        <span>
+                            © {new Date().getFullYear()} Skyravon Bank
+                        </span>
+
+                        <span>
+                            Secure Banking Administration
+                        </span>
+
+                    </div>
+
+                </section>
+
+                {/* RIGHT LOGIN PANEL */}
+                <section className="login-right">
+
+                    <div className="login-form-wrapper">
+
+                        {/* MOBILE BRAND */}
+                        <div className="login-mobile-brand">
+
+                            <div className="bank-logo">
+                                <FaUniversity />
+                            </div>
+
+                            <div>
+                                <strong>Skyravon Bank</strong>
+                                <span>ADMIN PORTAL</span>
+                            </div>
+
+                        </div>
+
+                        <div className="login-form-top">
+
+                            <span className="login-form-badge">
+                                <FaShieldAlt />
+                                SECURE ADMIN PORTAL
                             </span>
 
                         </div>
 
-                    </div>
-
-                </div>
-
-                {/* RIGHT */}
-
-                <div className="login-right">
-
-                    <form
-
-                        className="login-form"
-
-                        onSubmit={handleSubmit}
-
-                    >
-
+                        {/* FORM TITLE */}
                         <div className="form-title">
 
-                            <h2>
-
-                                Admin Login
-
-                            </h2>
+                            <h2>Welcome back</h2>
 
                             <p>
-
-                                Sign in to continue
-
+                                Sign in to access your administration
+                                dashboard.
                             </p>
 
                         </div>
 
-                        {error && (
-
-                            <div className="alert error">
-
-                                {error}
-
-                            </div>
-
-                        )}
-
-                        {success && (
-
-                            <div className="alert success">
-
-                                {success}
-
-                            </div>
-
-                        )}
-
-                        {/* Email */}
-
-                        <div className="input-group">
-
-                            <label>
-
-                                Email Address
-
-                            </label>
-
-                            <div className="input-box">
-
-                                <FaEnvelope />
-
-                                <input
-
-                                    type="email"
-
-                                    name="email"
-
-                                    placeholder="admin@richieebank.com"
-
-                                    value={formData.email}
-
-                                    onChange={handleChange}
-
-                                />
-
-                            </div>
-
-                        </div>
-
-                        {/* Password */}
-
-                        <div className="input-group">
-
-                            <label>
-
-                                Password
-
-                            </label>
-
-                            <div className="input-box">
-
-                                <FaLock />
-
-                                <input
-
-                                    type={
-                                        showPassword
-                                            ? "text"
-                                            : "password"
-                                    }
-
-                                    name="password"
-
-                                    placeholder="Enter Password"
-
-                                    value={formData.password}
-
-                                    onChange={handleChange}
-
-                                />
-
-                                <button
-
-                                    type="button"
-
-                                    className="password-btn"
-
-                                    onClick={() =>
-
-                                        setShowPassword(
-
-                                            !showPassword
-
-                                        )
-
-                                    }
-
-                                >
-
-                                    {
-
-                                        showPassword
-
-                                            ? <FaEyeSlash />
-
-                                            : <FaEye />
-
-                                    }
-
-                                </button>
-
-                            </div>
-
-                        </div>
-
-                        {/* Remember */}
-
-                        <div className="remember-row">
-
-                            <label className="remember-label">
-
-                                <input
-
-                                    type="checkbox"
-
-                                    name="remember"
-
-                                    checked={formData.remember}
-
-                                    onChange={handleChange}
-
-                                />
-
-                                Remember Me
-
-                            </label>
-
-                        </div>
-
-                        {/* Button */}
-
-                        <button
-
-                            type="submit"
-
-                            className="login-btn"
-
-                            disabled={loading}
-
+                        {/* LOGIN FORM */}
+                        <form
+                            className="login-form"
+                            onSubmit={handleSubmit}
                         >
 
-                            {
+                            {/* ERROR MESSAGE */}
+                            {error && (
+                                <div
+                                    className="alert error"
+                                    role="alert"
+                                >
+                                    <span className="alert-symbol">
+                                        !
+                                    </span>
 
-                                loading
+                                    <span>{error}</span>
+                                </div>
+                            )}
 
-                                    ? (
+                            {/* SUCCESS MESSAGE */}
+                            {success && (
+                                <div
+                                    className="alert success"
+                                    role="status"
+                                >
+                                    <FaCheckCircle />
+                                    <span>{success}</span>
+                                </div>
+                            )}
 
-                                        <>
+                            {/* EMAIL */}
+                            <div className="input-group">
 
-                                            <FaSpinner className="spin" />
+                                <label htmlFor="admin-email">
+                                    Email Address
+                                </label>
 
-                                            Signing In...
+                                <div className="input-box">
 
-                                        </>
+                                    <FaEnvelope className="input-icon" />
 
-                                    )
+                                    <input
+                                        id="admin-email"
+                                        type="email"
+                                        name="email"
+                                        placeholder="Enter your admin email"
+                                        value={formData.email}
+                                        onChange={handleChange}
+                                        autoComplete="username"
+                                        required
+                                        disabled={loading}
+                                    />
 
-                                    : (
+                                </div>
 
-                                        <>
+                            </div>
 
-                                            Login
+                            {/* PASSWORD */}
+                            <div className="input-group">
 
-                                            <FaArrowRight />
+                                <div className="password-label-row">
 
-                                        </>
+                                    <label htmlFor="admin-password">
+                                        Password
+                                    </label>
 
-                                    )
+                                </div>
 
-                            }
+                                <div className="input-box">
 
-                        </button>
+                                    <FaLock className="input-icon" />
 
-                    </form>
+                                    <input
+                                        id="admin-password"
+                                        type={
+                                            showPassword
+                                                ? "text"
+                                                : "password"
+                                        }
+                                        name="password"
+                                        placeholder="Enter your password"
+                                        value={formData.password}
+                                        onChange={handleChange}
+                                        autoComplete="current-password"
+                                        required
+                                        disabled={loading}
+                                    />
 
-                </div>
+                                    <button
+                                        type="button"
+                                        className="password-btn"
+                                        onClick={() =>
+                                            setShowPassword(
+                                                (prev) => !prev
+                                            )
+                                        }
+                                        aria-label={
+                                            showPassword
+                                                ? "Hide password"
+                                                : "Show password"
+                                        }
+                                        disabled={loading}
+                                    >
+                                        {showPassword
+                                            ? <FaEyeSlash />
+                                            : <FaEye />
+                                        }
+                                    </button>
+
+                                </div>
+
+                            </div>
+
+                            {/* REMEMBER ME */}
+                            <div className="remember-row">
+
+                                <label className="remember-label">
+
+                                    <input
+                                        type="checkbox"
+                                        name="remember"
+                                        checked={formData.remember}
+                                        onChange={handleChange}
+                                        disabled={loading}
+                                    />
+
+                                    <span className="custom-checkbox"></span>
+
+                                    Remember me
+
+                                </label>
+
+                                <span className="admin-access-label">
+                                    Authorized personnel only
+                                </span>
+
+                            </div>
+
+                            {/* LOGIN BUTTON */}
+                            <button
+                                type="submit"
+                                className="login-btn"
+                                disabled={loading}
+                            >
+
+                                {loading ? (
+                                    <>
+                                        <FaSpinner className="spin" />
+                                        Authenticating...
+                                    </>
+                                ) : (
+                                    <>
+                                        Sign In to Dashboard
+                                        <FaArrowRight />
+                                    </>
+                                )}
+
+                            </button>
+
+                        </form>
+
+                        {/* CREATE ADMIN ACCOUNT LINK */}
+                        <div className="create-admin-link">
+
+                            <span>
+                                Need an administrator account?
+                            </span>
+
+                            <Link to="/admin/adminregister">
+                                Create New Admin
+                                <FaArrowRight />
+                            </Link>
+
+                        </div>
+
+                        {/* DIVIDER */}
+                        <div className="login-divider">
+
+                            <span></span>
+
+                            <p>SECURE ADMINISTRATION</p>
+
+                            <span></span>
+
+                        </div>
+
+                        {/* SECURITY NOTE */}
+                        <div className="login-security-note">
+
+                            <FaLock />
+
+                            <p>
+                                This portal is restricted to authorized
+                                Skyravon Bank administrators. Never share
+                                your login credentials.
+                            </p>
+
+                        </div>
+
+                    </div>
+
+                    {/* RIGHT FOOTER */}
+                    <div className="login-right-footer">
+
+                        <span>
+                            Skyravon Bank Admin Portal
+                        </span>
+
+                        <span>
+                            Confidential Access
+                        </span>
+
+                    </div>
+
+                </section>
 
             </div>
 
-        </div>
-
+        </main>
     );
-
 }
 
 export default Login;

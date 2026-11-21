@@ -1,11 +1,158 @@
 const pool = require("../config/db");
+const nodemailer = require("nodemailer");
+
+// =====================================================
+// EMAIL CONFIGURATION
+// =====================================================
+
+const mailTransporter = nodemailer.createTransport({
+    service: "gmail",
+    auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASSWORD
+    }
+});
+
+// =====================================================
+// HTML ESCAPING
+// =====================================================
+
+const escapeHtml = (value) => {
+    return String(value ?? "").replace(/[&<>"']/g, (char) => ({
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        '"': "&quot;",
+        "'": "&#39;"
+    })[char]);
+};
+
+// =====================================================
+// SEND TRANSFER DEBIT EMAIL
+// =====================================================
+
+const sendTransferDebitAlert = async ({
+    email,
+    fullName,
+    accountNumber,
+    amount,
+    reference,
+    balance
+}) => {
+    try {
+        if (!email) {
+            console.error("Debit alert skipped: customer email not found.");
+            return false;
+        }
+
+        if (!process.env.EMAIL_USER || !process.env.EMAIL_PASSWORD) {
+            console.error("Debit alert skipped: email credentials are missing.");
+            return false;
+        }
+
+        const formattedAmount = Number(amount).toLocaleString("en-NG", {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        });
+
+        const formattedBalance = Number(balance).toLocaleString("en-NG", {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        });
+
+        const safeName = escapeHtml(fullName || "Valued Customer");
+        const safeAccount = escapeHtml(accountNumber || "N/A");
+        const safeReference = escapeHtml(reference || "N/A");
+
+        const info = await mailTransporter.sendMail({
+            from: `"Richiee Bank" <${process.env.EMAIL_USER}>`,
+            to: email,
+            subject: "Richiee Bank - Successful Transfer Debit Alert",
+
+            text: `
+Dear ${fullName || "Valued Customer"},
+
+Your transfer has been approved successfully.
+
+Amount Debited: ${formattedAmount}
+Account Number: ${accountNumber || "N/A"}
+Transaction Reference: ${reference || "N/A"}
+Transaction Date: ${new Date().toLocaleString("en-NG")}
+Transaction Status: SUCCESSFUL
+Available Balance: ${formattedBalance}
+
+Thank you for banking with Richiee Bank.
+            `,
+
+            html: `
+                <div style="font-family:Arial,sans-serif;max-width:600px;margin:20px auto;border:1px solid #e5e7eb;border-radius:12px;overflow:hidden;">
+
+                    <div style="background:#123c78;color:white;padding:25px;">
+                        <h2 style="margin:0;">RICHIEE BANK</h2>
+                        <p>Transaction Notification</p>
+                    </div>
+
+                    <div style="padding:25px;color:#333;">
+                        <h3>Dear ${safeName},</h3>
+
+                        <p>
+                            Your transfer has been approved successfully
+                            and your account has been debited.
+                        </p>
+
+                        <div style="background:#f4f7fb;padding:20px;border-radius:8px;">
+
+                            <h3 style="color:#123c78;">Debit Transaction Details</h3>
+
+                            <p><strong>Transaction Type:</strong> Transfer Debit</p>
+                            <p><strong>Amount Debited:</strong> ${formattedAmount}</p>
+                            <p><strong>Account Number:</strong> ${safeAccount}</p>
+                            <p><strong>Reference:</strong> ${safeReference}</p>
+                            <p><strong>Date:</strong> ${new Date().toLocaleString("en-NG")}</p>
+
+                            <p>
+                                <strong>Status:</strong>
+                                <span style="color:green;font-weight:bold;">SUCCESSFUL</span>
+                            </p>
+
+                            <hr style="border:0;border-top:1px solid #ddd;">
+
+                            <p>
+                                <strong>Available Balance:</strong>
+                                ${formattedBalance}
+                            </p>
+                        </div>
+
+                        <p>Thank you for banking with Richiee Bank.</p>
+
+                        <p style="font-size:12px;color:#777;">
+                            This is an automated notification. Please do not reply.
+                        </p>
+                    </div>
+                </div>
+            `
+        });
+
+        console.log(
+            "Debit alert email sent:",
+            info.messageId,
+            "to:",
+            email
+        );
+
+        return true;
+
+    } catch (error) {
+        console.error("Transfer debit email failed:", error.message);
+        return false;
+    }
+};
 
 // =====================================================
 // GET ADMIN IDENTITY
 // =====================================================
 
 const getAdminIdentity = (req) => {
-
     return String(
         req.admin?.email ||
         req.admin?.username ||
@@ -13,24 +160,15 @@ const getAdminIdentity = (req) => {
         req.admin?.id ||
         "ADMIN"
     );
-
 };
-
 
 // =====================================================
 // GET PENDING TRANSACTIONS
 // =====================================================
 
-const getPendingTransactions = async (
-    req,
-    res,
-    next
-) => {
-
+const getPendingTransactions = async (req, res, next) => {
     try {
-
-        const [rows] = await pool.execute(
-            `
+        const [rows] = await pool.execute(`
             SELECT
                 t.id,
                 t.user_id,
@@ -44,81 +182,38 @@ const getPendingTransactions = async (
                 t.status,
                 t.approved_by,
                 t.approved_at,
-
                 u.full_name,
                 u.account_number
-
             FROM transactions t
-
-            INNER JOIN users u
-                ON u.id = t.user_id
-
+            INNER JOIN users u ON u.id = t.user_id
             WHERE t.status = 'PENDING'
-
             ORDER BY t.created_at DESC
-            `
-        );
-
+        `);
 
         return res.status(200).json({
-
             success: true,
-
             transactions: rows
-
         });
 
-    }
-
-    catch (error) {
-
-        console.error(
-            "Get pending transactions error:",
-            error
-        );
-
+    } catch (error) {
+        console.error("Get pending transactions error:", error);
         next(error);
-
     }
-
 };
-
 
 // =====================================================
 // GET ALL TRANSACTIONS
 // =====================================================
 
-const getAllTransactions = async (
-    req,
-    res,
-    next
-) => {
-
+const getAllTransactions = async (req, res, next) => {
     try {
+        let limit = Number(req.query.limit) || 100;
 
-        let limit =
-            Number(req.query.limit) || 100;
-
-
-        // Prevent invalid limits
-
-        if (
-            !Number.isInteger(limit) ||
-            limit <= 0
-        ) {
-
+        if (!Number.isInteger(limit) || limit <= 0) {
             limit = 100;
-
         }
 
-
-        // Maximum 500 records
-
-        limit = Math.min(
-            limit,
-            500
-        );
-
+        limit = Math.min(limit, 500);
 
         const [rows] = await pool.execute(
             `
@@ -135,1304 +230,668 @@ const getAllTransactions = async (
                 t.status,
                 t.approved_by,
                 t.approved_at,
-
                 u.full_name,
                 u.account_number
-
             FROM transactions t
-
-            INNER JOIN users u
-                ON u.id = t.user_id
-
+            INNER JOIN users u ON u.id = t.user_id
             ORDER BY t.created_at DESC
-
             LIMIT ${limit}
             `
         );
 
-
         return res.status(200).json({
-
             success: true,
-
             count: rows.length,
-
             transactions: rows
-
         });
 
-    }
-
-    catch (error) {
-
-        console.error(
-            "Get all transactions error:",
-            error
-        );
-
+    } catch (error) {
+        console.error("Get all transactions error:", error);
         next(error);
-
     }
-
 };
-
 
 // =====================================================
 // APPROVE TRANSACTION
 // =====================================================
-//
-// DEPOSIT
-//     balance + amount
-//
-// WITHDRAWAL
-//     balance - amount
-//
-// TRANSFER
-//     sender - amount
-//     receiver + amount
-//
-// =====================================================
 
-const approveTransaction = async (
-    req,
-    res,
-    next
-) => {
+const approveTransaction = async (req, res, next) => {
+    const transactionId = Number(req.params.id);
 
-    const transactionId =
-        Number(req.params.id);
-
-
-    // Validate ID
-
-    if (
-        !Number.isInteger(transactionId) ||
-        transactionId <= 0
-    ) {
-
+    if (!Number.isInteger(transactionId) || transactionId <= 0) {
         return res.status(400).json({
-
             success: false,
-
-            message:
-                "Invalid transaction ID."
-
+            message: "Invalid transaction ID."
         });
-
     }
 
-
-    const connection =
-        await pool.getConnection();
-
+    let connection;
 
     try {
+        connection = await pool.getConnection();
 
         await connection.beginTransaction();
 
+        // Lock transaction
+        const [transactionRows] = await connection.execute(
+            `
+            SELECT *
+            FROM transactions
+            WHERE id = ?
+            FOR UPDATE
+            `,
+            [transactionId]
+        );
 
-        // =================================================
-        // LOCK TRANSACTION
-        // =================================================
-
-        const [transactionRows] =
-            await connection.execute(
-                `
-                SELECT *
-                FROM transactions
-                WHERE id = ?
-                FOR UPDATE
-                `,
-                [transactionId]
-            );
-
-
-        const transaction =
-            transactionRows[0];
-
+        const transaction = transactionRows[0];
 
         if (!transaction) {
-
             await connection.rollback();
 
             return res.status(404).json({
-
                 success: false,
-
-                message:
-                    "Transaction not found."
-
+                message: "Transaction not found."
             });
-
         }
 
-
-        // =================================================
-        // PREVENT DOUBLE APPROVAL
-        // =================================================
-
-        if (
-            transaction.status ===
-            "APPROVED"
-        ) {
-
+        if (transaction.status === "APPROVED") {
             await connection.rollback();
 
             return res.status(400).json({
-
                 success: false,
-
-                message:
-                    "This transaction has already been approved."
-
+                message: "This transaction has already been approved."
             });
-
         }
 
-
-        // =================================================
-        // REJECTED TRANSACTION
-        // =================================================
-
-        if (
-            transaction.status ===
-            "REJECTED"
-        ) {
-
+        if (transaction.status === "REJECTED") {
             await connection.rollback();
 
             return res.status(400).json({
-
                 success: false,
-
-                message:
-                    "A rejected transaction cannot be approved."
-
+                message: "A rejected transaction cannot be approved."
             });
-
         }
 
-
-        // =================================================
-        // ONLY PENDING TRANSACTIONS
-        // =================================================
-
-        if (
-            transaction.status !==
-            "PENDING"
-        ) {
-
+        if (transaction.status !== "PENDING") {
             await connection.rollback();
 
             return res.status(400).json({
-
                 success: false,
-
-                message:
-                    "Only pending transactions can be approved."
-
+                message: "Only pending transactions can be approved."
             });
-
         }
 
+        const adminIdentity = getAdminIdentity(req);
 
-        const adminIdentity =
-            getAdminIdentity(req);
-
-
-        // =================================================
+        // =============================================
         // DEPOSIT
-        // =================================================
+        // =============================================
 
-        if (
-            transaction.type ===
-            "DEPOSIT"
-        ) {
+        if (transaction.type === "DEPOSIT") {
+            const [users] = await connection.execute(
+                `
+                SELECT id, balance
+                FROM users
+                WHERE id = ?
+                FOR UPDATE
+                `,
+                [transaction.user_id]
+            );
 
-            const [users] =
-                await connection.execute(
-                    `
-                    SELECT
-                        id,
-                        balance
-                    FROM users
-                    WHERE id = ?
-                    FOR UPDATE
-                    `,
-                    [transaction.user_id]
-                );
-
-
-            const user =
-                users[0];
-
+            const user = users[0];
 
             if (!user) {
-
                 await connection.rollback();
 
                 return res.status(404).json({
-
                     success: false,
-
-                    message:
-                        "User account not found."
-
+                    message: "User account not found."
                 });
-
             }
 
+            const currentBalance = Number(user.balance);
+            const amount = Number(transaction.amount);
 
-            const currentBalance =
-                Number(user.balance);
-
-
-            const amount =
-                Number(transaction.amount);
-
-
-            if (
-                !Number.isFinite(amount) ||
-                amount <= 0
-            ) {
-
+            if (!Number.isFinite(amount) || amount <= 0) {
                 await connection.rollback();
 
                 return res.status(400).json({
-
                     success: false,
-
-                    message:
-                        "Invalid transaction amount."
-
+                    message: "Invalid transaction amount."
                 });
-
             }
 
-
-            const newBalance =
-                currentBalance + amount;
-
-
-            // Update balance
+            const newBalance = currentBalance + amount;
 
             await connection.execute(
-                `
-                UPDATE users
-                SET balance = ?
-                WHERE id = ?
-                `,
-                [
-                    newBalance,
-                    user.id
-                ]
+                `UPDATE users SET balance = ? WHERE id = ?`,
+                [newBalance, user.id]
             );
-
-
-            // Approve transaction
 
             await connection.execute(
                 `
                 UPDATE transactions
-                SET
-                    balance_after = ?,
+                SET balance_after = ?,
                     status = 'APPROVED',
                     approved_by = ?,
                     approved_at = CURRENT_TIMESTAMP
                 WHERE id = ?
                 `,
-                [
-                    newBalance,
-                    adminIdentity,
-                    transaction.id
-                ]
+                [newBalance, adminIdentity, transaction.id]
             );
-
 
             await connection.commit();
 
-
             return res.status(200).json({
-
                 success: true,
-
-                message:
-                    "Deposit approved successfully.",
-
-                reference:
-                    transaction.reference,
-
+                message: "Deposit approved successfully.",
+                reference: transaction.reference,
                 amount,
-
-                balance:
-                    newBalance,
-
-                status:
-                    "APPROVED"
-
+                balance: newBalance,
+                status: "APPROVED"
             });
-
         }
 
-
-        // =================================================
+        // =============================================
         // WITHDRAWAL
-        // =================================================
+        // =============================================
 
-        if (
-            transaction.type ===
-            "WITHDRAWAL"
-        ) {
+        if (transaction.type === "WITHDRAWAL") {
+            const [users] = await connection.execute(
+                `
+                SELECT id, balance
+                FROM users
+                WHERE id = ?
+                FOR UPDATE
+                `,
+                [transaction.user_id]
+            );
 
-            const [users] =
-                await connection.execute(
-                    `
-                    SELECT
-                        id,
-                        balance
-                    FROM users
-                    WHERE id = ?
-                    FOR UPDATE
-                    `,
-                    [transaction.user_id]
-                );
-
-
-            const user =
-                users[0];
-
+            const user = users[0];
 
             if (!user) {
-
                 await connection.rollback();
 
                 return res.status(404).json({
-
                     success: false,
-
-                    message:
-                        "User account not found."
-
+                    message: "User account not found."
                 });
-
             }
 
+            const currentBalance = Number(user.balance);
+            const amount = Number(transaction.amount);
 
-            const currentBalance =
-                Number(user.balance);
-
-
-            const amount =
-                Number(transaction.amount);
-
-
-            if (
-                !Number.isFinite(amount) ||
-                amount <= 0
-            ) {
-
+            if (!Number.isFinite(amount) || amount <= 0) {
                 await connection.rollback();
 
                 return res.status(400).json({
-
                     success: false,
-
-                    message:
-                        "Invalid transaction amount."
-
+                    message: "Invalid transaction amount."
                 });
-
             }
 
-
-            // Check balance again
-
-            if (
-                currentBalance < amount
-            ) {
-
+            if (currentBalance < amount) {
                 await connection.rollback();
 
                 return res.status(400).json({
-
                     success: false,
-
-                    message:
-                        "Insufficient balance. Withdrawal cannot be approved."
-
+                    message: "Insufficient balance. Withdrawal cannot be approved."
                 });
-
             }
 
-
-            const newBalance =
-                currentBalance - amount;
-
-
-            // Deduct money
+            const newBalance = currentBalance - amount;
 
             await connection.execute(
-                `
-                UPDATE users
-                SET balance = ?
-                WHERE id = ?
-                `,
-                [
-                    newBalance,
-                    user.id
-                ]
+                `UPDATE users SET balance = ? WHERE id = ?`,
+                [newBalance, user.id]
             );
-
-
-            // Approve transaction
 
             await connection.execute(
                 `
                 UPDATE transactions
-                SET
-                    balance_after = ?,
+                SET balance_after = ?,
                     status = 'APPROVED',
                     approved_by = ?,
                     approved_at = CURRENT_TIMESTAMP
                 WHERE id = ?
                 `,
-                [
-                    newBalance,
-                    adminIdentity,
-                    transaction.id
-                ]
+                [newBalance, adminIdentity, transaction.id]
             );
-
 
             await connection.commit();
 
-
             return res.status(200).json({
-
                 success: true,
-
-                message:
-                    "Withdrawal approved successfully.",
-
-                reference:
-                    transaction.reference,
-
+                message: "Withdrawal approved successfully.",
+                reference: transaction.reference,
                 amount,
-
-                balance:
-                    newBalance,
-
-                status:
-                    "APPROVED"
-
+                balance: newBalance,
+                status: "APPROVED"
             });
-
         }
 
+        // =============================================
+        // TRANSFER OUT
+        // =============================================
 
-        // =================================================
-        // TRANSFER
-        // =================================================
+        if (transaction.type === "TRANSFER_OUT") {
+            const inReference = `${transaction.reference}-IN`;
 
-        if (
-            transaction.type ===
-            "TRANSFER_OUT"
-        ) {
+            const [transferRows] = await connection.execute(
+                `
+                SELECT *
+                FROM transactions
+                WHERE reference = ?
+                AND type = 'TRANSFER_IN'
+                FOR UPDATE
+                `,
+                [inReference]
+            );
 
-            const inReference =
-                `${transaction.reference}-IN`;
-
-
-            // Find matching transfer-in
-
-            const [transferRows] =
-                await connection.execute(
-                    `
-                    SELECT *
-                    FROM transactions
-                    WHERE reference = ?
-                    AND type = 'TRANSFER_IN'
-                    FOR UPDATE
-                    `,
-                    [inReference]
-                );
-
-
-            const transferIn =
-                transferRows[0];
-
+            const transferIn = transferRows[0];
 
             if (!transferIn) {
-
                 await connection.rollback();
 
                 return res.status(404).json({
-
                     success: false,
-
-                    message:
-                        "Matching transfer transaction was not found."
-
+                    message: "Matching transfer transaction was not found."
                 });
-
             }
 
-
-            // Both must be pending
-
-            if (
-                transferIn.status !==
-                "PENDING"
-            ) {
-
+            if (transferIn.status !== "PENDING") {
                 await connection.rollback();
 
                 return res.status(400).json({
-
                     success: false,
-
-                    message:
-                        "Matching transfer is no longer pending."
-
+                    message: "Matching transfer is no longer pending."
                 });
-
             }
 
+            const senderId = Number(transaction.user_id);
+            const receiverId = Number(transferIn.user_id);
 
-            const senderId =
-                Number(transaction.user_id);
-
-
-            const receiverId =
-                Number(transferIn.user_id);
-
-
-            if (
-                !senderId ||
-                !receiverId ||
-                senderId === receiverId
-            ) {
-
+            if (!senderId || !receiverId || senderId === receiverId) {
                 await connection.rollback();
 
                 return res.status(400).json({
-
                     success: false,
-
-                    message:
-                        "Invalid transfer accounts."
-
+                    message: "Invalid transfer accounts."
                 });
-
             }
-
 
             // Lock both accounts in ID order
+            const firstId = Math.min(senderId, receiverId);
+            const secondId = Math.max(senderId, receiverId);
 
-            const firstId =
-                Math.min(
-                    senderId,
-                    receiverId
-                );
+            const [users] = await connection.execute(
+                `
+                SELECT
+                    id,
+                    account_number,
+                    balance,
+                    full_name,
+                    email
+                FROM users
+                WHERE id IN (?, ?)
+                ORDER BY id
+                FOR UPDATE
+                `,
+                [firstId, secondId]
+            );
 
+            const sender = users.find(
+                user => Number(user.id) === senderId
+            );
 
-            const secondId =
-                Math.max(
-                    senderId,
-                    receiverId
-                );
+            const receiver = users.find(
+                user => Number(user.id) === receiverId
+            );
 
-
-            const [users] =
-                await connection.execute(
-                    `
-                    SELECT
-                        id,
-                        account_number,
-                        balance,
-                        full_name
-                    FROM users
-                    WHERE id IN (?, ?)
-                    ORDER BY id
-                    FOR UPDATE
-                    `,
-                    [
-                        firstId,
-                        secondId
-                    ]
-                );
-
-
-            const sender =
-                users.find(
-                    user =>
-                        Number(user.id) ===
-                        senderId
-                );
-
-
-            const receiver =
-                users.find(
-                    user =>
-                        Number(user.id) ===
-                        receiverId
-                );
-
-
-            if (
-                !sender ||
-                !receiver
-            ) {
-
+            if (!sender || !receiver) {
                 await connection.rollback();
 
                 return res.status(404).json({
-
                     success: false,
-
-                    message:
-                        "Unable to locate transfer accounts."
-
+                    message: "Unable to locate transfer accounts."
                 });
-
             }
 
+            const amount = Number(transaction.amount);
 
-            const amount =
-                Number(transaction.amount);
-
-
-            if (
-                !Number.isFinite(amount) ||
-                amount <= 0
-            ) {
-
+            if (!Number.isFinite(amount) || amount <= 0) {
                 await connection.rollback();
 
                 return res.status(400).json({
-
                     success: false,
-
-                    message:
-                        "Invalid transfer amount."
-
+                    message: "Invalid transfer amount."
                 });
-
             }
 
+            const senderBalance = Number(sender.balance);
+            const receiverBalance = Number(receiver.balance);
 
-            const senderBalance =
-                Number(sender.balance);
-
-
-            const receiverBalance =
-                Number(receiver.balance);
-
-
-            // Check sender balance
-
-            if (
-                senderBalance < amount
-            ) {
-
+            if (senderBalance < amount) {
                 await connection.rollback();
 
                 return res.status(400).json({
-
                     success: false,
-
-                    message:
-                        "Insufficient sender balance. Transfer cannot be approved."
-
+                    message: "Insufficient sender balance. Transfer cannot be approved."
                 });
-
             }
 
+            const senderNewBalance = senderBalance - amount;
+            const receiverNewBalance = receiverBalance + amount;
 
-            const senderNewBalance =
-                senderBalance - amount;
-
-
-            const receiverNewBalance =
-                receiverBalance + amount;
-
-
-            // Update sender
-
+            // Debit sender
             await connection.execute(
-                `
-                UPDATE users
-                SET balance = ?
-                WHERE id = ?
-                `,
-                [
-                    senderNewBalance,
-                    sender.id
-                ]
+                `UPDATE users SET balance = ? WHERE id = ?`,
+                [senderNewBalance, sender.id]
             );
 
-
-            // Update receiver
-
+            // Credit receiver
             await connection.execute(
-                `
-                UPDATE users
-                SET balance = ?
-                WHERE id = ?
-                `,
-                [
-                    receiverNewBalance,
-                    receiver.id
-                ]
+                `UPDATE users SET balance = ? WHERE id = ?`,
+                [receiverNewBalance, receiver.id]
             );
 
-
-            // Approve transfer out
-
+            // Approve outgoing transaction
             await connection.execute(
                 `
                 UPDATE transactions
-                SET
-                    balance_after = ?,
+                SET balance_after = ?,
                     status = 'APPROVED',
                     approved_by = ?,
                     approved_at = CURRENT_TIMESTAMP
                 WHERE id = ?
                 `,
-                [
-                    senderNewBalance,
-                    adminIdentity,
-                    transaction.id
-                ]
+                [senderNewBalance, adminIdentity, transaction.id]
             );
 
-
-            // Approve transfer in
-
+            // Approve incoming transaction
             await connection.execute(
                 `
                 UPDATE transactions
-                SET
-                    balance_after = ?,
+                SET balance_after = ?,
                     status = 'APPROVED',
                     approved_by = ?,
                     approved_at = CURRENT_TIMESTAMP
                 WHERE id = ?
                 `,
-                [
-                    receiverNewBalance,
-                    adminIdentity,
-                    transferIn.id
-                ]
+                [receiverNewBalance, adminIdentity, transferIn.id]
             );
 
-
+            // Commit before sending the email
             await connection.commit();
 
-
-            return res.status(200).json({
-
-                success: true,
-
-                message:
-                    "Transfer approved successfully.",
-
-                reference:
-                    transaction.reference,
-
+            // Send debit alert to registered sender email
+            const emailSent = await sendTransferDebitAlert({
+                email: sender.email,
+                fullName: sender.full_name,
+                accountNumber: sender.account_number,
                 amount,
-
-                sender: {
-
-                    accountNumber:
-                        sender.account_number,
-
-                    balance:
-                        senderNewBalance
-
-                },
-
-                receiver: {
-
-                    accountNumber:
-                        receiver.account_number,
-
-                    balance:
-                        receiverNewBalance
-
-                },
-
-                status:
-                    "APPROVED"
-
+                reference: transaction.reference,
+                balance: senderNewBalance
             });
 
+            return res.status(200).json({
+                success: true,
+                message: emailSent
+                    ? "Transfer approved successfully. Debit alert email sent."
+                    : "Transfer approved successfully, but email delivery failed.",
+                reference: transaction.reference,
+                amount,
+                emailSent,
+                sender: {
+                    accountNumber: sender.account_number,
+                    balance: senderNewBalance
+                },
+                receiver: {
+                    accountNumber: receiver.account_number,
+                    balance: receiverNewBalance
+                },
+                status: "APPROVED"
+            });
         }
 
-
-        // =================================================
-        // UNKNOWN TYPE
-        // =================================================
-
         await connection.rollback();
-
 
         return res.status(400).json({
-
             success: false,
-
-            message:
-                "Unsupported transaction type."
-
+            message: "Unsupported transaction type."
         });
 
+    } catch (error) {
+        if (connection) {
+            try {
+                await connection.rollback();
+            } catch (rollbackError) {
+                console.error("Rollback error:", rollbackError);
+            }
+        }
+
+        console.error("Approve transaction error:", error);
+        return next(error);
+
+    } finally {
+        if (connection) {
+            connection.release();
+        }
     }
-
-    catch (error) {
-
-        await connection.rollback();
-
-        console.error(
-            "Approve transaction error:",
-            error
-        );
-
-        next(error);
-
-    }
-
-    finally {
-
-        connection.release();
-
-    }
-
 };
-
 
 // =====================================================
 // REJECT TRANSACTION
 // =====================================================
 
-const rejectTransaction = async (
-    req,
-    res,
-    next
-) => {
+const rejectTransaction = async (req, res, next) => {
+    const transactionId = Number(req.params.id);
 
-    const transactionId =
-        Number(req.params.id);
-
-
-    if (
-        !Number.isInteger(transactionId) ||
-        transactionId <= 0
-    ) {
-
+    if (!Number.isInteger(transactionId) || transactionId <= 0) {
         return res.status(400).json({
-
             success: false,
-
-            message:
-                "Invalid transaction ID."
-
+            message: "Invalid transaction ID."
         });
-
     }
 
-
-    const connection =
-        await pool.getConnection();
-
+    let connection;
 
     try {
+        connection = await pool.getConnection();
 
         await connection.beginTransaction();
 
+        const [rows] = await connection.execute(
+            `
+            SELECT *
+            FROM transactions
+            WHERE id = ?
+            FOR UPDATE
+            `,
+            [transactionId]
+        );
 
-        // =================================================
-        // LOCK TRANSACTION
-        // =================================================
-
-        const [rows] =
-            await connection.execute(
-                `
-                SELECT *
-                FROM transactions
-                WHERE id = ?
-                FOR UPDATE
-                `,
-                [transactionId]
-            );
-
-
-        const transaction =
-            rows[0];
-
+        const transaction = rows[0];
 
         if (!transaction) {
-
             await connection.rollback();
 
             return res.status(404).json({
-
                 success: false,
-
-                message:
-                    "Transaction not found."
-
+                message: "Transaction not found."
             });
-
         }
 
-
-        // =================================================
-        // ALREADY APPROVED
-        // =================================================
-
-        if (
-            transaction.status ===
-            "APPROVED"
-        ) {
-
+        if (transaction.status === "APPROVED") {
             await connection.rollback();
 
             return res.status(400).json({
-
                 success: false,
-
-                message:
-                    "An approved transaction cannot be rejected."
-
+                message: "An approved transaction cannot be rejected."
             });
-
         }
 
-
-        // =================================================
-        // ALREADY REJECTED
-        // =================================================
-
-        if (
-            transaction.status ===
-            "REJECTED"
-        ) {
-
+        if (transaction.status === "REJECTED") {
             await connection.rollback();
 
             return res.status(400).json({
-
                 success: false,
-
-                message:
-                    "This transaction has already been rejected."
-
+                message: "This transaction has already been rejected."
             });
-
         }
 
-
-        // =================================================
-        // ONLY PENDING
-        // =================================================
-
-        if (
-            transaction.status !==
-            "PENDING"
-        ) {
-
+        if (transaction.status !== "PENDING") {
             await connection.rollback();
 
             return res.status(400).json({
-
                 success: false,
-
-                message:
-                    "Only pending transactions can be rejected."
-
+                message: "Only pending transactions can be rejected."
             });
-
         }
 
-
-        const adminIdentity =
-            getAdminIdentity(req);
-
-
-        // =================================================
-        // NORMAL TRANSACTION
-        // =================================================
+        const adminIdentity = getAdminIdentity(req);
 
         if (
-            transaction.type !==
-            "TRANSFER_OUT" &&
-            transaction.type !==
-            "TRANSFER_IN"
+            transaction.type !== "TRANSFER_OUT" &&
+            transaction.type !== "TRANSFER_IN"
         ) {
-
             await connection.execute(
                 `
                 UPDATE transactions
-                SET
-                    status = 'REJECTED',
+                SET status = 'REJECTED',
                     approved_by = ?,
                     approved_at = CURRENT_TIMESTAMP
                 WHERE id = ?
                 `,
-                [
-                    adminIdentity,
-                    transaction.id
-                ]
+                [adminIdentity, transaction.id]
             );
-
 
             await connection.commit();
 
-
             return res.status(200).json({
-
                 success: true,
-
-                message:
-                    "Transaction rejected successfully.",
-
-                reference:
-                    transaction.reference,
-
-                status:
-                    "REJECTED"
-
+                message: "Transaction rejected successfully.",
+                reference: transaction.reference,
+                status: "REJECTED"
             });
-
         }
 
+        let transferOut = transaction;
+        let transferIn = null;
 
-        // =================================================
-        // TRANSFER REJECTION
-        // =================================================
+        if (transaction.type === "TRANSFER_OUT") {
+            const [rowsIn] = await connection.execute(
+                `
+                SELECT *
+                FROM transactions
+                WHERE reference = ?
+                AND type = 'TRANSFER_IN'
+                FOR UPDATE
+                `,
+                [`${transaction.reference}-IN`]
+            );
 
-        let transferOut =
-            transaction;
+            transferIn = rowsIn[0];
 
+        } else {
+            transferIn = transaction;
 
-        let transferIn =
-            null;
+            const reference = String(transaction.reference || "");
 
-
-        // -----------------------------------------------
-        // If selected transaction is TRANSFER_OUT
-        // -----------------------------------------------
-
-        if (
-            transaction.type ===
-            "TRANSFER_OUT"
-        ) {
-
-            const [rowsIn] =
-                await connection.execute(
-                    `
-                    SELECT *
-                    FROM transactions
-                    WHERE reference = ?
-                    AND type = 'TRANSFER_IN'
-                    FOR UPDATE
-                    `,
-                    [
-                        `${transaction.reference}-IN`
-                    ]
-                );
-
-
-            transferIn =
-                rowsIn[0];
-
-        }
-
-
-        // -----------------------------------------------
-        // If selected transaction is TRANSFER_IN
-        // -----------------------------------------------
-
-        else {
-
-            transferIn =
-                transaction;
-
-
-            const reference =
-                String(
-                    transaction.reference ||
-                    ""
-                );
-
-
-            const baseReference =
-                reference.endsWith("-IN")
-                    ? reference.slice(
-                        0,
-                        -3
-                    )
-                    : null;
-
+            const baseReference = reference.endsWith("-IN")
+                ? reference.slice(0, -3)
+                : null;
 
             if (!baseReference) {
-
                 await connection.rollback();
 
                 return res.status(400).json({
-
                     success: false,
-
-                    message:
-                        "Invalid transfer reference."
-
+                    message: "Invalid transfer reference."
                 });
-
             }
 
+            const [rowsOut] = await connection.execute(
+                `
+                SELECT *
+                FROM transactions
+                WHERE reference = ?
+                AND type = 'TRANSFER_OUT'
+                FOR UPDATE
+                `,
+                [baseReference]
+            );
 
-            const [rowsOut] =
-                await connection.execute(
-                    `
-                    SELECT *
-                    FROM transactions
-                    WHERE reference = ?
-                    AND type = 'TRANSFER_OUT'
-                    FOR UPDATE
-                    `,
-                    [baseReference]
-                );
-
-
-            transferOut =
-                rowsOut[0];
-
+            transferOut = rowsOut[0];
         }
 
-
-        // =================================================
-        // MATCHING TRANSFER NOT FOUND
-        // =================================================
-
-        if (
-            !transferOut ||
-            !transferIn
-        ) {
-
+        if (!transferOut || !transferIn) {
             await connection.rollback();
 
             return res.status(404).json({
-
                 success: false,
-
-                message:
-                    "Matching transfer transaction not found."
-
+                message: "Matching transfer transaction not found."
             });
-
         }
 
-
-        // =================================================
-        // BOTH MUST BE PENDING
-        // =================================================
-
         if (
-            transferOut.status !==
-                "PENDING" ||
-            transferIn.status !==
-                "PENDING"
+            transferOut.status !== "PENDING" ||
+            transferIn.status !== "PENDING"
         ) {
-
             await connection.rollback();
 
             return res.status(400).json({
-
                 success: false,
-
-                message:
-                    "The transfer is no longer pending."
-
+                message: "The transfer is no longer pending."
             });
-
         }
-
-
-        // =================================================
-        // REJECT BOTH SIDES
-        // =================================================
 
         await connection.execute(
             `
             UPDATE transactions
-            SET
-                status = 'REJECTED',
+            SET status = 'REJECTED',
                 approved_by = ?,
                 approved_at = CURRENT_TIMESTAMP
             WHERE id IN (?, ?)
             `,
-            [
-                adminIdentity,
-                transferOut.id,
-                transferIn.id
-            ]
+            [adminIdentity, transferOut.id, transferIn.id]
         );
-
 
         await connection.commit();
 
-
         return res.status(200).json({
-
             success: true,
-
-            message:
-                "Transfer rejected successfully.",
-
-            reference:
-                transferOut.reference,
-
-            status:
-                "REJECTED"
-
+            message: "Transfer rejected successfully.",
+            reference: transferOut.reference,
+            status: "REJECTED"
         });
 
+    } catch (error) {
+        if (connection) {
+            try {
+                await connection.rollback();
+            } catch (rollbackError) {
+                console.error("Rollback error:", rollbackError);
+            }
+        }
+
+        console.error("Reject transaction error:", error);
+        return next(error);
+
+    } finally {
+        if (connection) {
+            connection.release();
+        }
     }
-
-    catch (error) {
-
-        await connection.rollback();
-
-        console.error(
-            "Reject transaction error:",
-            error
-        );
-
-        next(error);
-
-    }
-
-    finally {
-
-        connection.release();
-
-    }
-
 };
-
 
 // =====================================================
 // EXPORT CONTROLLERS
 // =====================================================
 
 module.exports = {
-
     getPendingTransactions,
-
     getAllTransactions,
-
     approveTransaction,
-
     rejectTransaction
-
 };

@@ -1,0 +1,482 @@
+
+/* =========================================
+   RICHIEE BANK - ADMIN SETTINGS
+   Modern Premium Fintech Dashboard
+========================================= */
+
+.admin-settings {
+    width: 100%;
+    min-height: 100vh;
+    padding: 30px;
+    background: #f4f7fc;
+    color: #17243b;
+    font-family: "Inter", "Segoe UI", sans-serif;
+}
+
+/* HEADER */
+.settings-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 30px;
+    padding: 28px 32px;
+    background: linear-gradient(120deg, #101d3a, #173d78, #2463b5);
+    border-radius: 18px;
+    color: #fff;
+    box-shadow: 0 12px 30px rgba(22, 55, 105, 0.15);
+}
+
+.settings-header h1 {
+    margin: 0 0 8px;
+    font-size: 28px;
+    font-weight: 750;
+    letter-spacing: -0.7px;
+}
+
+.settings-header p {
+    margin: 0;
+    color: rgba(255, 255, 255, 0.75);
+    font-size: 14px;
+}
+
+.settings-header-icon {
+    width: 58px;
+    height: 58px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.13);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 16px;
+    font-size: 25px;
+    color: #fff;
+}
+
+/* NOTIFICATION MESSAGES */
+.settings-message {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 15px 18px;
+    margin-bottom: 20px;
+    border-radius: 12px;
+    font-size: 14px;
+    font-weight: 600;
+    animation: settingsFadeIn 0.3s ease;
+}
+
+.settings-message.success {
+    color: #087443;
+    background: #e8f8ef;
+    border: 1px solid #b9ebce;
+}
+
+.settings-message.error {
+    color: #b42318;
+    background: #fff0ee;
+    border: 1px solid #ffd0ca;
+}
+
+@keyframes settingsFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-6px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* SETTINGS CARDS */
+.settings-card {
+    padding: 27px;
+    margin-bottom: 24px;
+    background: #fff;
+    border: 1px solid #e8edf5;
+    border-radius: 17px;
+    box-shadow: 0 5px 20px rgba(25, 45, 80, 0.045);
+    transition: box-shadow 0.25s ease, transform 0.25s ease;
+}
+
+.settings-card:hover {
+    box-shadow: 0 10px 28px rgba(25, 45, 80, 0.075);
+}
+
+.settings-card-heading {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding-bottom: 22px;
+    margin-bottom: 23px;
+    border-bottom: 1px solid #edf0f5;
+}
+
+.settings-card-heading h2 {
+    margin: 0 0 6px;
+    color: #17243b;
+    font-size: 17px;
+    font-weight: 750;
+}
+
+.settings-card-heading p {
+    margin: 0;
+    color: #8490a3;
+    font-size: 13px;
+}
+
+/* ICONS */
+.settings-icon {
+    width: 47px;
+    height: 47px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 13px;
+    font-size: 19px;
+}
+
+.settings-icon.blue {
+    color: #2363c5;
+    background: #eaf2ff;
+}
+
+.settings-icon.purple {
+    color: #8054d8;
+    background: #f2edff;
+}
+
+.settings-icon.orange {
+    color: #d97706;
+    background: #fff5e7;
+}
+
+.settings-icon.green {
+    color: #15945e;
+    background: #e8f8f0;
+}
+
+/* PROFILE FORM */
+.settings-form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 21px;
+}
+
+.settings-field {
+    width: 100%;
+    margin-bottom: 19px;
+}
+
+.settings-field label {
+    display: block;
+    margin-bottom: 9px;
+    color: #34445d;
+    font-size: 13px;
+    font-weight: 650;
+}
+
+.settings-field input {
+    width: 100%;
+    height: 48px;
+    padding: 0 15px;
+    outline: none;
+    border: 1px solid #dfe6f0;
+    border-radius: 10px;
+    background: #fbfcfe;
+    color: #17243b;
+    font-size: 14px;
+    transition: all 0.2s ease;
+    box-sizing: border-box;
+}
+
+.settings-field input::placeholder {
+    color: #a4afbf;
+}
+
+.settings-field input:focus {
+    border-color: #3478d4;
+    background: #fff;
+    box-shadow: 0 0 0 4px rgba(52, 120, 212, 0.10);
+}
+
+.settings-field input:disabled {
+    color: #77849a;
+    background: #f0f3f8;
+    cursor: not-allowed;
+}
+
+/* PASSWORD INPUT */
+.password-input-wrapper {
+    position: relative;
+    width: 100%;
+}
+
+.password-input-wrapper input {
+    padding-right: 48px;
+}
+
+.password-eye {
+    position: absolute;
+    top: 50%;
+    right: 13px;
+    transform: translateY(-50%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 7px;
+    border: none;
+    background: transparent;
+    color: #8290a5;
+    cursor: pointer;
+    font-size: 16px;
+    transition: color 0.2s ease;
+}
+
+.password-eye:hover {
+    color: #2363c5;
+}
+
+/* SAVE BUTTON */
+.settings-save-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 9px;
+    min-height: 45px;
+    padding: 0 22px;
+    margin-top: 5px;
+    border: none;
+    border-radius: 10px;
+    background: linear-gradient(120deg, #17458e, #2876d2);
+    color: #fff;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 5px 13px rgba(35, 99, 197, 0.18);
+    transition: all 0.25s ease;
+}
+
+.settings-save-btn:hover:not(:disabled) {
+    transform: translateY(-2px);
+    background: linear-gradient(120deg, #123b7d, #1e64bd);
+    box-shadow: 0 8px 18px rgba(35, 99, 197, 0.25);
+}
+
+.settings-save-btn:active:not(:disabled) {
+    transform: translateY(0);
+}
+
+.settings-save-btn:disabled {
+    opacity: 0.65;
+    cursor: not-allowed;
+}
+
+/* NOTIFICATION PREFERENCES */
+.settings-toggle-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    padding: 17px 0;
+    border-bottom: 1px solid #edf0f5;
+    cursor: pointer;
+}
+
+.settings-toggle-row:last-of-type {
+    margin-bottom: 18px;
+}
+
+.settings-toggle-row strong {
+    display: block;
+    margin-bottom: 5px;
+    color: #293a54;
+    font-size: 14px;
+    font-weight: 650;
+}
+
+.settings-toggle-row p {
+    margin: 0;
+    color: #8995a8;
+    font-size: 12px;
+    line-height: 1.5;
+}
+
+/* CUSTOM CHECKBOX */
+.settings-toggle-row input[type="checkbox"] {
+    position: relative;
+    width: 43px;
+    height: 24px;
+    flex-shrink: 0;
+    appearance: none;
+    -webkit-appearance: none;
+    background: #dce3ed;
+    border: none;
+    border-radius: 30px;
+    cursor: pointer;
+    transition: background 0.25s ease;
+}
+
+.settings-toggle-row input[type="checkbox"]::before {
+    content: "";
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: 18px;
+    height: 18px;
+    background: #fff;
+    border-radius: 50%;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
+    transition: transform 0.25s ease;
+}
+
+.settings-toggle-row input[type="checkbox"]:checked {
+    background: #2876d2;
+}
+
+.settings-toggle-row input[type="checkbox"]:checked::before {
+    transform: translateX(19px);
+}
+
+.settings-toggle-row input[type="checkbox"]:focus-visible {
+    outline: 3px solid rgba(40, 118, 210, 0.2);
+    outline-offset: 3px;
+}
+
+/* SECURITY INFORMATION */
+.security-information {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 15px;
+}
+
+.security-information > div {
+    display: flex;
+    flex-direction: column;
+    gap: 9px;
+    padding: 18px;
+    background: #f7f9fc;
+    border: 1px solid #edf0f5;
+    border-radius: 12px;
+}
+
+.security-information span {
+    color: #8793a6;
+    font-size: 12px;
+}
+
+.security-information strong {
+    color: #1b355c;
+    font-size: 14px;
+    font-weight: 700;
+}
+
+/* RESPONSIVE TABLETS */
+@media (max-width: 900px) {
+    .admin-settings {
+        padding: 22px;
+    }
+
+    .security-information {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+/* RESPONSIVE MOBILE */
+@media (max-width: 600px) {
+    .admin-settings {
+        padding: 15px;
+    }
+
+    .settings-header {
+        padding: 22px 19px;
+        border-radius: 14px;
+    }
+
+    .settings-header h1 {
+        font-size: 23px;
+    }
+
+    .settings-header p {
+        max-width: 230px;
+        font-size: 12px;
+        line-height: 1.6;
+    }
+
+    .settings-header-icon {
+        width: 45px;
+        height: 45px;
+        font-size: 20px;
+    }
+
+    .settings-card {
+        padding: 19px 16px;
+        border-radius: 14px;
+    }
+
+    .settings-card-heading {
+        gap: 12px;
+    }
+
+    .settings-card-heading h2 {
+        font-size: 15px;
+    }
+
+    .settings-card-heading p {
+        font-size: 12px;
+        line-height: 1.5;
+    }
+
+    .settings-icon {
+        width: 42px;
+        height: 42px;
+        font-size: 17px;
+    }
+
+    .settings-form-grid {
+        grid-template-columns: 1fr;
+        gap: 0;
+    }
+
+    .settings-field input {
+        height: 46px;
+        font-size: 13px;
+    }
+
+    .settings-save-btn {
+        width: 100%;
+        min-height: 46px;
+    }
+
+    .settings-toggle-row {
+        gap: 12px;
+    }
+
+    .settings-toggle-row strong {
+        font-size: 13px;
+    }
+
+    .settings-toggle-row p {
+        font-size: 11px;
+    }
+
+    .security-information {
+        grid-template-columns: 1fr;
+    }
+
+    .security-information > div {
+        padding: 15px;
+    }
+}
+
+/* ACCESSIBILITY */
+@media (prefers-reduced-motion: reduce) {
+    .admin-settings *,
+    .admin-settings *::before,
+    .admin-settings *::after {
+        animation-duration: 0.01ms !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+

@@ -1,6 +1,8 @@
+
 const express = require("express");
 const cors = require("cors");
 const path = require("path");
+
 require("dotenv").config();
 
 const {
@@ -28,21 +30,45 @@ const adminUsersRoutes =
 const transferRoutes =
     require("./routes/transferRoutes");
 
+const cardRoutes =
+    require("./routes/cardRoutes");
+
+const administratorsRoutes =
+    require("./routes/administratorsRoutes");
+
+const userNotificationRoutes =
+    require("./routes/userNotificationRoutes");
+
+const adminRegisterRoutes =
+    require("./routes/adminRegisterRoutes");
 
 const app = express();
 
-const PORT =
-    process.env.PORT || 5000;
+const PORT = process.env.PORT || 5000;
 
 
 /* =========================================
    CORS
 ========================================= */
 
+const allowedOrigins = [
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
+    process.env.CLIENT_URL
+].filter(Boolean);
+
 app.use(
     cors({
-        origin:
-            "http://localhost:5173",
+        origin: function (origin, callback) {
+            // Allow requests without an origin, such as Postman.
+            if (!origin || allowedOrigins.includes(origin)) {
+                return callback(null, true);
+            }
+
+            return callback(
+                new Error("Not allowed by CORS")
+            );
+        },
 
         methods: [
             "GET",
@@ -65,9 +91,7 @@ app.use(
    BODY PARSING
 ========================================= */
 
-app.use(
-    express.json()
-);
+app.use(express.json());
 
 app.use(
     express.urlencoded({
@@ -83,10 +107,7 @@ app.use(
 app.use(
     "/uploads",
     express.static(
-        path.join(
-            __dirname,
-            "uploads"
-        )
+        path.join(__dirname, "uploads")
     )
 );
 
@@ -95,28 +116,17 @@ app.use(
    API HEALTH CHECK
 ========================================= */
 
-app.get(
-    "/",
-    (req, res) => {
-
-        res.json({
-
-            success: true,
-
-            message:
-                "Richiee Banking API is running",
-
-            version:
-                "1.0.0"
-
-        });
-
-    }
-);
+app.get("/", (req, res) => {
+    res.json({
+        success: true,
+        message: "Richiee Banking API is running",
+        version: "1.0.0"
+    });
+});
 
 
 /* =========================================
-   API ROUTES
+   PUBLIC AUTHENTICATION ROUTES
 ========================================= */
 
 app.use(
@@ -124,15 +134,47 @@ app.use(
     authRoutes
 );
 
+
+/* =========================================
+   PUBLIC ADMIN REGISTRATION
+========================================= */
+
+// IMPORTANT:
+// Keep this BEFORE the other admin route mounts.
+// Registration must be accessible without an admin JWT.
+
+app.use(
+    "/api/admin",
+    adminRegisterRoutes
+);
+
+
+/* =========================================
+   PROFILE ROUTES
+========================================= */
+
 app.use(
     "/api/profile",
     profileRoutes
 );
 
+
+/* =========================================
+   BANK ROUTES
+========================================= */
+
 app.use(
     "/api/bank",
     bankRoutes
 );
+
+
+/* =========================================
+   ADMIN ROUTES
+========================================= */
+
+// Keep your existing authentication protection
+// inside these route files.
 
 app.use(
     "/api/admin",
@@ -142,6 +184,11 @@ app.use(
 app.use(
     "/api/admin",
     adminUsersRoutes
+);
+
+app.use(
+    "/api/admin",
+    administratorsRoutes
 );
 
 
@@ -156,32 +203,42 @@ app.use(
 
 
 /* =========================================
-   404 HANDLER
+   CARD ROUTES
 ========================================= */
 
 app.use(
-    (req, res) => {
-
-        res.status(404).json({
-
-            success: false,
-
-            message:
-                "API route not found"
-
-        });
-
-    }
+    "/api/cards",
+    cardRoutes
 );
+
+
+/* =========================================
+   NOTIFICATION ROUTES
+========================================= */
+
+app.use(
+    "/api/notifications",
+    userNotificationRoutes
+);
+
+
+/* =========================================
+   404 HANDLER
+========================================= */
+
+app.use((req, res) => {
+    res.status(404).json({
+        success: false,
+        message: "API route not found"
+    });
+});
 
 
 /* =========================================
    GLOBAL ERROR HANDLER
 ========================================= */
 
-app.use(
-    errorHandler
-);
+app.use(errorHandler);
 
 
 /* =========================================
@@ -189,40 +246,31 @@ app.use(
 ========================================= */
 
 const startServer = async () => {
-
     try {
-
         await testDatabaseConnection();
 
-        app.listen(
-            PORT,
-            () => {
+        app.listen(PORT, () => {
+            console.log(
+                `Banking server running on http://localhost:${PORT}`
+            );
 
-                console.log(
-                    `Banking server running on http://localhost:${PORT}`
-                );
+            console.log(
+                `Profile uploads available at http://localhost:${PORT}/uploads`
+            );
 
-                console.log(
-                    `Profile uploads available at http://localhost:${PORT}/uploads`
-                );
+            console.log(
+                "Admin registration route: POST /api/admin/register"
+            );
+        });
 
-            }
-        );
-
-    }
-
-    catch (error) {
-
+    } catch (error) {
         console.error(
             "Failed to start server:",
             error
         );
 
         process.exit(1);
-
     }
-
 };
-
 
 startServer();

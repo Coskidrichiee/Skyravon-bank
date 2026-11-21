@@ -1,850 +1,484 @@
-import {
-    useEffect,
-    useMemo,
-    useState
-} from "react";
 
+import { useEffect, useMemo, useState } from "react";
+import { Link } from "react-router-dom";
 import {
-    Link
-} from "react-router-dom";
+    ArrowDownLeft,
+    ArrowUpRight,
+    ArrowLeft,
+    Search,
+    Wallet,
+    ArrowDownToLine,
+    ArrowUpFromLine,
+    ArrowLeftRight,
+    ShieldCheck,
+    CalendarDays,
+    Copy,
+    RefreshCw,
+    ReceiptText,
+    ChevronRight,
+    CircleHelp,
+    Clock3,
+    TrendingUp,
+    TrendingDown,
+    X
+} from "lucide-react";
 
-import {
-    useAuth
-} from "../context/useAuth";
-
-import {
-    getTransactions
-} from "../services/api";
-
+import { useAuth } from "../context/useAuth";
+import { getTransactions } from "../services/api";
 import "./Transactions.css";
 
-
 function Transactions() {
-    const {
-        user,
-        token
-    } = useAuth();
+    const { user, token } = useAuth();
 
+    const [transactions, setTransactions] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState("");
+    const [filter, setFilter] = useState("ALL");
+    const [search, setSearch] = useState("");
+    const [copied, setCopied] = useState("");
 
-    const [transactions, setTransactions] =
-        useState([]);
+    const formatCurrency = (amount) =>
+        new Intl.NumberFormat("en-US", {
+            style: "currency",
+            currency: "USD",
+            minimumFractionDigits: 2
+        }).format(Number(amount || 0));
 
-    const [loading, setLoading] =
-        useState(true);
+    const formatDate = (date) => {
+        if (!date) return "Date unavailable";
 
-    const [error, setError] =
-        useState("");
+        const parsed = new Date(date);
+        if (Number.isNaN(parsed.getTime())) return "Date unavailable";
 
-    const [filter, setFilter] =
-        useState("ALL");
+        return new Intl.DateTimeFormat("en-US", {
+            day: "2-digit",
+            month: "short",
+            year: "numeric"
+        }).format(parsed);
+    };
 
-    const [search, setSearch] =
-        useState("");
+    const formatTime = (date) => {
+        if (!date) return "";
 
+        const parsed = new Date(date);
+        if (Number.isNaN(parsed.getTime())) return "";
 
-    /* =========================================
-       LOAD TRANSACTIONS
-    ========================================= */
+        return new Intl.DateTimeFormat("en-US", {
+            hour: "2-digit",
+            minute: "2-digit"
+        }).format(parsed);
+    };
+
+    const loadTransactions = async () => {
+        if (!token) {
+            setLoading(false);
+            return;
+        }
+
+        try {
+            setLoading(true);
+            setError("");
+
+            const response = await getTransactions(token, 100);
+
+            if (response?.success) {
+                setTransactions(response.transactions || []);
+            } else {
+                setError(response?.message || "Unable to load transactions.");
+            }
+        } catch (err) {
+            console.error("Transactions error:", err);
+            setError(err.message || "Unable to load transactions.");
+        } finally {
+            setLoading(false);
+        }
+    };
 
     useEffect(() => {
-        const loadTransactions =
-            async () => {
-                if (!token) {
-                    setLoading(false);
-                    return;
-                }
-
-                try {
-                    setLoading(true);
-                    setError("");
-
-                    const response =
-                        await getTransactions(
-                            token,
-                            100
-                        );
-
-                    if (response.success) {
-                        setTransactions(
-                            response.transactions ||
-                            []
-                        );
-                    }
-                } catch (err) {
-                    console.error(
-                        "Transactions error:",
-                        err
-                    );
-
-                    setError(
-                        err.message ||
-                        "Unable to load transactions."
-                    );
-                } finally {
-                    setLoading(false);
-                }
-            };
-
         loadTransactions();
     }, [token]);
 
-
-    /* =========================================
-       CURRENCY
-    ========================================= */
-
-const formatCurrency = (amount) => {
-
-    return new Intl.NumberFormat(
-        "en-US",
-        {
-            style: "currency",
-            currency: "USD",
-            minimumFractionDigits: 2,
-            maximumFractionDigits: 2
+    const getTransactionTitle = (transaction) => {
+        switch (transaction.type) {
+            case "DEPOSIT": return "Deposit";
+            case "WITHDRAWAL": return "Withdrawal";
+            case "TRANSFER_IN": return "Money received";
+            case "TRANSFER_OUT": return "Money transfer";
+            default: return transaction.type || "Transaction";
         }
-    ).format(
-        Number(amount || 0)
-    );
-
-};
-
-
-    /* =========================================
-       DATE
-    ========================================= */
-
-    const formatDate = (
-        date
-    ) => {
-        return new Intl.DateTimeFormat(
-            "en-NG",
-            {
-                day: "2-digit",
-                month: "short",
-                year: "numeric"
-            }
-        ).format(new Date(date));
     };
 
-
-    const formatTime = (
-        date
-    ) => {
-        return new Intl.DateTimeFormat(
-            "en-NG",
-            {
-                hour: "2-digit",
-                minute: "2-digit"
-            }
-        ).format(new Date(date));
-    };
-
-
-    /* =========================================
-       TRANSACTION LABEL
-    ========================================= */
-const getTransactionTitle = (
-    transaction
-) => {
-
-    switch (transaction.type) {
-
-        case "DEPOSIT":
-            return "Deposit";
-
-        case "WITHDRAWAL":
-            return "Withdrawal";
-
-        case "TRANSFER_IN":
-            return "Money Received";
-
-        case "TRANSFER_OUT":
-            return "Money Transfer";
-
-        default:
-            return "Transaction";
-
-    }
-
-};
-
-
-
-    /* =========================================
-       TRANSACTION TYPE
-    ========================================= */
-
-    const getTransactionClass = (
-        type
-    ) => {
+    const getTransactionIcon = (type) => {
         switch (type) {
-            case "DEPOSIT":
-            case "TRANSFER_IN":
-                return "transaction-in";
-
-            case "WITHDRAWAL":
-            case "TRANSFER_OUT":
-                return "transaction-out";
-
-            default:
-                return "transaction-neutral";
+            case "DEPOSIT": return <ArrowDownToLine size={19} />;
+            case "WITHDRAWAL": return <ArrowUpFromLine size={19} />;
+            case "TRANSFER_IN": return <ArrowDownLeft size={19} />;
+            case "TRANSFER_OUT": return <ArrowUpRight size={19} />;
+            default: return <ReceiptText size={19} />;
         }
     };
 
+    const getTransactionDirection = (type) =>
+        ["DEPOSIT", "TRANSFER_IN"].includes(type) ? "in" :
+        ["WITHDRAWAL", "TRANSFER_OUT"].includes(type) ? "out" : "neutral";
 
-    /* =========================================
-       TRANSACTION ICON
-    ========================================= */
+    const getStatus = (transaction) => {
+        const status = String(transaction.status || "COMPLETED").toUpperCase();
 
-    const getTransactionIcon = (
-        type
-    ) => {
-        switch (type) {
-            case "DEPOSIT":
-                return "↓";
+        if (["SUCCESS", "COMPLETED", "APPROVED"].includes(status)) {
+            return { label: "Successful", className: "success" };
+        }
 
-            case "WITHDRAWAL":
-                return "↑";
+        if (["PENDING", "PROCESSING"].includes(status)) {
+            return { label: "Pending", className: "pending" };
+        }
 
-            case "TRANSFER_IN":
-                return "↙";
+        if (["FAILED", "REJECTED", "CANCELLED"].includes(status)) {
+            return { label: status.charAt(0) + status.slice(1).toLowerCase(), className: "failed" };
+        }
 
-            case "TRANSFER_OUT":
-                return "↗";
+        return { label: status, className: "neutral" };
+    };
 
-            default:
-                return "•";
+    const filteredTransactions = useMemo(() => {
+        return transactions.filter((transaction) => {
+            const matchesFilter =
+                filter === "ALL" ||
+                (filter === "TRANSFERS"
+                    ? ["TRANSFER_IN", "TRANSFER_OUT"].includes(transaction.type)
+                    : transaction.type === filter);
+
+            const searchableText = [
+                transaction.type,
+                transaction.reference,
+                transaction.description,
+                transaction.related_account,
+                transaction.status
+            ].filter(Boolean).join(" ").toLowerCase();
+
+            return matchesFilter && searchableText.includes(search.trim().toLowerCase());
+        });
+    }, [transactions, filter, search]);
+
+    const totalIn = transactions
+        .filter(t => ["DEPOSIT", "TRANSFER_IN"].includes(t.type))
+        .reduce((sum, t) => sum + Number(t.amount || 0), 0);
+
+    const totalOut = transactions
+        .filter(t => ["WITHDRAWAL", "TRANSFER_OUT"].includes(t.type))
+        .reduce((sum, t) => sum + Number(t.amount || 0), 0);
+
+    const copyReference = async (reference) => {
+        if (!reference) return;
+
+        try {
+            await navigator.clipboard.writeText(reference);
+            setCopied(reference);
+            setTimeout(() => setCopied(""), 1800);
+        } catch (err) {
+            console.error("Unable to copy reference:", err);
         }
     };
 
+    const firstName = user?.full_name?.split(" ")[0] || "Customer";
 
-    /* =========================================
-       FILTER + SEARCH
-    ========================================= */
-
-    const filteredTransactions =
-        useMemo(() => {
-            return transactions.filter(
-                (transaction) => {
-
-                    const matchesFilter =
-                        filter === "ALL" ||
-                        transaction.type ===
-                            filter;
-
-                    const searchText =
-                        search
-                            .trim()
-                            .toLowerCase();
-
-                    if (!searchText) {
-                        return matchesFilter;
-                    }
-
-                    const searchableText =
-                        [
-                            transaction.type,
-                            transaction.reference,
-                            transaction.description,
-                            transaction.related_account
-                        ]
-                            .filter(Boolean)
-                            .join(" ")
-                            .toLowerCase();
-
-                    return (
-                        matchesFilter &&
-                        searchableText.includes(
-                            searchText
-                        )
-                    );
-                }
-            );
-        }, [
-            transactions,
-            filter,
-            search
-        ]);
-
-
-    /* =========================================
-       SUMMARY
-    ========================================= */
-
-    const totalIn =
-        transactions
-            .filter(
-                transaction =>
-                    transaction.type ===
-                        "DEPOSIT" ||
-                    transaction.type ===
-                        "TRANSFER_IN"
-            )
-            .reduce(
-                (
-                    total,
-                    transaction
-                ) =>
-                    total +
-                    Number(
-                        transaction.amount ||
-                        0
-                    ),
-                0
-            );
-
-
-    const totalOut =
-        transactions
-            .filter(
-                transaction =>
-                    transaction.type ===
-                        "WITHDRAWAL" ||
-                    transaction.type ===
-                        "TRANSFER_OUT"
-            )
-            .reduce(
-                (
-                    total,
-                    transaction
-                ) =>
-                    total +
-                    Number(
-                        transaction.amount ||
-                        0
-                    ),
-                0
-            );
-
+    const profileImage = user?.profile_picture
+        ? (user.profile_picture.startsWith("http")
+            ? user.profile_picture
+            : `${import.meta.env.VITE_API_URL || "http://localhost:5000"}/uploads/profiles/${user.profile_picture}`)
+        : null;
 
     return (
         <div className="transactions-page">
 
-            {/* =====================================
-                HEADER
-            ===================================== */}
-
             <header className="transactions-header">
-
-                <div className="transactions-header-left">
-
-                    <Link
-                        to="/dashboard"
-                        className="transactions-back-button"
-                    >
-                        ←
+                <div className="transactions-header-inner">
+                    <Link to="/dashboard" className="transactions-back">
+                        <ArrowLeft size={19} />
                     </Link>
 
-                    <div>
-                        <span>
-                            Banking
-                        </span>
+                    <Link to="/dashboard" className="transactions-brand">
+                        <div className="transactions-brand-icon">
+                            <Wallet size={21} />
+                        </div>
+                        <span>Skyravon<span>Bank</span></span>
+                    </Link>
 
-                        <h1>
-                            Transactions
-                        </h1>
+                    <div className="transactions-header-right">
+                        <div className="transactions-user-avatar">
+                            {profileImage ? (
+                                <img src={profileImage} alt="Profile" />
+                            ) : (
+                                firstName.charAt(0).toUpperCase()
+                            )}
+                        </div>
+
+                        <div className="transactions-user-info">
+                            <strong>{user?.full_name || "Customer"}</strong>
+                            <span>{user?.account_number || "Bank customer"}</span>
+                        </div>
                     </div>
-
                 </div>
-
-
-                <div className="transactions-user">
-
-                    <div className="transactions-user-avatar">
-
-                        {user?.profile_picture ? (
-                            <img
-                                src={`http://localhost:5000/uploads/profiles/${user.profile_picture}`}
-                                alt={
-                                    user.full_name ||
-                                    "Profile"
-                                }
-                            />
-                        ) : (
-                            user?.full_name
-                                ?.charAt(0)
-                                ?.toUpperCase() ||
-                            "U"
-                        )}
-
-                    </div>
-
-                    <div className="transactions-user-info">
-
-                        <strong>
-                            {user?.full_name ||
-                                "Customer"}
-                        </strong>
-
-                        <span>
-                            {user?.account_number ||
-                                "No account number"}
-                        </span>
-
-                    </div>
-
-                </div>
-
             </header>
-
-
-            {/* =====================================
-                CONTENT
-            ===================================== */}
 
             <main className="transactions-content">
 
-                {/* Intro */}
+                <div className="transactions-breadcrumb">
+                    <Link to="/dashboard">Dashboard</Link>
+                    <ChevronRight size={15} />
+                    <span>Transactions</span>
+                </div>
 
                 <section className="transactions-intro">
-
                     <div>
-
-                        <span>
-                            ACCOUNT ACTIVITY
-                        </span>
-
-                        <h2>
-                            Transaction History
-                        </h2>
-
+                        <span className="transactions-eyebrow">ACCOUNT MANAGEMENT</span>
+                        <h1>Transaction history</h1>
                         <p>
-                            View and track all your
-                            deposits, withdrawals and
-                            transfers.
+                            Hello {firstName}, monitor your account activity
+                            and keep track of your money.
                         </p>
-
                     </div>
+
+                    <button
+                        className="transactions-refresh"
+                        onClick={loadTransactions}
+                        disabled={loading}
+                    >
+                        <RefreshCw size={16} className={loading ? "refresh-spinning" : ""} />
+                        Refresh
+                    </button>
+                </section>
+
+                <section className="transactions-summary">
+
+                    <article className="transaction-stat-card">
+                        <div className="transaction-stat-top">
+                            <span>Total transactions</span>
+                            <div className="stat-icon purple">
+                                <ReceiptText size={20} />
+                            </div>
+                        </div>
+                        <h2>{transactions.length.toLocaleString("en-US")}</h2>
+                        <p>All recorded activities</p>
+                    </article>
+
+                    <article className="transaction-stat-card">
+                        <div className="transaction-stat-top">
+                            <span>Total money received</span>
+                            <div className="stat-icon green">
+                                <TrendingUp size={20} />
+                            </div>
+                        </div>
+                        <h2>{formatCurrency(totalIn)}</h2>
+                        <p><ArrowDownLeft size={14} /> Money into your account</p>
+                    </article>
+
+                    <article className="transaction-stat-card">
+                        <div className="transaction-stat-top">
+                            <span>Total money sent</span>
+                            <div className="stat-icon orange">
+                                <TrendingDown size={20} />
+                            </div>
+                        </div>
+                        <h2>{formatCurrency(totalOut)}</h2>
+                        <p><ArrowUpRight size={14} /> Money out of your account</p>
+                    </article>
 
                 </section>
 
+                <section className="transactions-panel">
 
-                {/* =====================================
-                    SUMMARY CARDS
-                ===================================== */}
-
-                <section className="transaction-summary">
-
-                    <div className="summary-card">
-
-                        <div className="summary-icon blue">
-                            ≡
-                        </div>
-
+                    <div className="transactions-panel-heading">
                         <div>
-                            <span>
-                                Total Transactions
-                            </span>
-
-                            <strong>
-                                {transactions.length}
-                            </strong>
+                            <h2>All transactions</h2>
+                            <p>Review your recent banking activities.</p>
                         </div>
 
-                    </div>
-
-
-                    <div className="summary-card">
-
-                        <div className="summary-icon green">
-                            ↓
-                        </div>
-
-                        <div>
-                            <span>
-                                Money In
-                            </span>
-
-                            <strong>
-                                {formatCurrency(
-                                    totalIn
-                                )}
-                            </strong>
-                        </div>
-
-                    </div>
-
-
-                    <div className="summary-card">
-
-                        <div className="summary-icon orange">
-                            ↑
-                        </div>
-
-                        <div>
-                            <span>
-                                Money Out
-                            </span>
-
-                            <strong>
-                                {formatCurrency(
-                                    totalOut
-                                )}
-                            </strong>
-                        </div>
-
-                    </div>
-
-                </section>
-
-
-                {/* =====================================
-                    FILTER BAR
-                ===================================== */}
-
-                <section className="transactions-toolbar">
-
-                    <div className="search-box">
-
-                        <span>
-                            ⌕
+                        <span className="transaction-count">
+                            {filteredTransactions.length} records
                         </span>
-
-                        <input
-                            type="search"
-                            placeholder="Search transactions..."
-                            value={search}
-                            onChange={
-                                event =>
-                                    setSearch(
-                                        event.target.value
-                                    )
-                            }
-                        />
-
                     </div>
 
-
-                    <div className="transaction-filters">
-
-                        <button
-                            type="button"
-                            className={
-                                filter === "ALL"
-                                    ? "active"
-                                    : ""
-                            }
-                            onClick={() =>
-                                setFilter(
-                                    "ALL"
-                                )
-                            }
-                        >
-                            All
-                        </button>
-
-                        <button
-                            type="button"
-                            className={
-                                filter === "DEPOSIT"
-                                    ? "active"
-                                    : ""
-                            }
-                            onClick={() =>
-                                setFilter(
-                                    "DEPOSIT"
-                                )
-                            }
-                        >
-                            Deposits
-                        </button>
-
-                        <button
-                            type="button"
-                            className={
-                                filter === "WITHDRAWAL"
-                                    ? "active"
-                                    : ""
-                            }
-                            onClick={() =>
-                                setFilter(
-                                    "WITHDRAWAL"
-                                )
-                            }
-                        >
-                            Withdrawals
-                        </button>
-
-                        <button
-                            type="button"
-                            className={
-                                filter === "TRANSFER_IN" ||
-                                filter === "TRANSFER_OUT"
-                                    ? "active"
-                                    : ""
-                            }
-                            onClick={() =>
-                                setFilter(
-                                    "TRANSFER_IN"
-                                )
-                            }
-                        >
-                            Transfers
-                        </button>
-
-                    </div>
-
-                </section>
-
-
-                {/* =====================================
-                    TRANSACTIONS
-                ===================================== */}
-
-                <section className="transactions-card">
-
-                    <div className="transactions-card-header">
-
-                        <div>
-                            <h3>
-                                Recent Transactions
-                            </h3>
-
-                            <p>
-                                {filteredTransactions.length}
-                                {" "}
-                                transaction
-                                {filteredTransactions.length !== 1
-                                    ? "s"
-                                    : ""}
-                                {" "}found
-                            </p>
+                    <div className="transactions-controls">
+                        <div className="transactions-search">
+                            <Search size={18} />
+                            <input
+                                type="search"
+                                placeholder="Search by description or reference..."
+                                value={search}
+                                onChange={e => setSearch(e.target.value)}
+                            />
+                            {search && (
+                                <button onClick={() => setSearch("")} aria-label="Clear search">
+                                    <X size={16} />
+                                </button>
+                            )}
                         </div>
 
+                        <div className="transactions-filters">
+                            {[
+                                ["ALL", "All"],
+                                ["DEPOSIT", "Deposits"],
+                                ["WITHDRAWAL", "Withdrawals"],
+                                ["TRANSFERS", "Transfers"]
+                            ].map(([value, label]) => (
+                                <button
+                                    key={value}
+                                    className={filter === value ? "active" : ""}
+                                    onClick={() => setFilter(value)}
+                                >
+                                    {label}
+                                </button>
+                            ))}
+                        </div>
                     </div>
-
 
                     {loading ? (
-
-                        <div className="transactions-loading">
-
+                        <div className="transactions-state">
                             <div className="transaction-spinner" />
-
-                            <p>
-                                Loading transactions...
-                            </p>
-
+                            <h3>Loading transactions</h3>
+                            <p>Please wait while we retrieve your account activity.</p>
                         </div>
-
                     ) : error ? (
-
-                        <div className="transactions-empty">
-
-                            <div className="empty-icon">
-                                !
+                        <div className="transactions-state">
+                            <div className="transactions-state-icon error">
+                                <CircleHelp size={27} />
                             </div>
-
-                            <h3>
-                                Unable to load transactions
-                            </h3>
-
-                            <p>
-                                {error}
-                            </p>
-
+                            <h3>Unable to load transactions</h3>
+                            <p>{error}</p>
+                            <button className="transactions-primary-button" onClick={loadTransactions}>
+                                <RefreshCw size={16} /> Try again
+                            </button>
                         </div>
-
                     ) : filteredTransactions.length === 0 ? (
-
-                        <div className="transactions-empty">
-
-                            <div className="empty-icon">
-                                ≡
+                        <div className="transactions-state">
+                            <div className="transactions-state-icon">
+                                <ReceiptText size={28} />
+                            </div>
+                            <h3>No transactions found</h3>
+                            <p>
+                                {search || filter !== "ALL"
+                                    ? "Try changing your search or filter."
+                                    : "Your banking activities will appear here when transactions are recorded."}
+                            </p>
+                            {(search || filter !== "ALL") && (
+                                <button
+                                    className="transactions-clear-button"
+                                    onClick={() => {
+                                        setSearch("");
+                                        setFilter("ALL");
+                                    }}
+                                >
+                                    Clear filters
+                                </button>
+                            )}
+                        </div>
+                    ) : (
+                        <>
+                            <div className="transactions-table-heading">
+                                <span>TRANSACTION DETAILS</span>
+                                <span>REFERENCE</span>
+                                <span>DATE</span>
+                                <span>STATUS</span>
+                                <span>AMOUNT</span>
                             </div>
 
-                            <h3>
-                                No transactions found
-                            </h3>
+                            <div className="transactions-list">
+                                {filteredTransactions.map((transaction, index) => {
+                                    const direction = getTransactionDirection(transaction.type);
+                                    const status = getStatus(transaction);
+                                    const incoming = direction === "in";
 
-                            <p>
-                                Your transaction history
-                                will appear here once you
-                                make a deposit, withdrawal
-                                or transfer.
-                            </p>
-
-                        </div>
-
-                    ) : (
-
-                        <div className="transaction-list">
-
-                            {filteredTransactions.map(
-                                transaction => (
-
-                                    <div
-                                        className="transaction-row"
-                                        key={
-                                            transaction.id
-                                        }
-                                    >
-
-                                        <div
-                                            className={`transaction-icon ${
-                                                getTransactionClass(
-                                                    transaction.type
-                                                )
-                                            }`}
+                                    return (
+                                        <article
+                                            className="transaction-item"
+                                            key={transaction.id || transaction.reference || index}
                                         >
-                                            {getTransactionIcon(
-                                                transaction.type
-                                            )}
-                                        </div>
+                                            <div className={`transaction-item-icon ${direction}`}>
+                                                {getTransactionIcon(transaction.type)}
+                                            </div>
 
-
-                                        <div className="transaction-main">
-
-                                            <strong>
-                                                {getTransactionTitle(
-                                                    transaction
+                                            <div className="transaction-item-details">
+                                                <strong>{getTransactionTitle(transaction)}</strong>
+                                                <span>{transaction.description || "Banking transaction"}</span>
+                                                {transaction.related_account && (
+                                                    <small>Account: {transaction.related_account}</small>
                                                 )}
-                                            </strong>
+                                            </div>
 
-                                            <span>
-                                                {transaction.description ||
-                                                    "Banking transaction"}
-                                            </span>
+                                            <div className="transaction-item-reference">
+                                                <span className="mobile-field-label">REFERENCE</span>
+                                                <div>
+                                                    <strong>{transaction.reference || "N/A"}</strong>
+                                                    {transaction.reference && (
+                                                        <button
+                                                            onClick={() => copyReference(transaction.reference)}
+                                                            title="Copy reference"
+                                                            aria-label="Copy transaction reference"
+                                                        >
+                                                            {copied === transaction.reference
+                                                                ? <span className="copied-label">Copied</span>
+                                                                : <Copy size={14} />}
+                                                        </button>
+                                                    )}
+                                                </div>
+                                            </div>
 
-                                            {transaction.related_account && (
-                                                <small>
-                                                    Account:{" "}
-                                                    {
-                                                        transaction.related_account
-                                                    }
-                                                </small>
-                                            )}
+                                            <div className="transaction-item-date">
+                                                <span className="mobile-field-label">DATE</span>
+                                                <strong>{formatDate(transaction.created_at)}</strong>
+                                                <span>{formatTime(transaction.created_at)}</span>
+                                            </div>
 
-                                        </div>
+                                            <div className="transaction-item-status">
+                                                <span className="mobile-field-label">STATUS</span>
+                                                <span className={`transaction-status ${status.className}`}>
+                                                    <span />
+                                                    {status.label}
+                                                </span>
+                                            </div>
 
-
-                                        <div className="transaction-reference">
-
-                                            <span>
-                                                Reference
-                                            </span>
-
-                                            <strong>
-                                                {
-                                                    transaction.reference
-                                                }
-                                            </strong>
-
-                                        </div>
-
-
-                                        <div className="transaction-date">
-
-                                            <strong>
-                                                {formatDate(
-                                                    transaction.created_at
-                                                )}
-                                            </strong>
-
-                                            <span>
-                                                {formatTime(
-                                                    transaction.created_at
-                                                )}
-                                            </span>
-
-                                        </div>
-
-
-                                        <div
-                                            className={`transaction-amount ${
-                                                getTransactionClass(
-                                                    transaction.type
-                                                )
-                                            }`}
-                                        >
-                                            {
-                                                transaction.type ===
-                                                    "DEPOSIT" ||
-                                                transaction.type ===
-                                                    "TRANSFER_IN"
-                                                    ? "+"
-                                                    : "-"
-                                            }
-
-                                            {formatCurrency(
-                                                transaction.amount
-                                            )}
-
-                                        </div>
-
-                                    </div>
-                                )
-                            )}
-
-                        </div>
-
+                                            <div className={`transaction-item-amount ${direction}`}>
+                                                <span className="mobile-field-label">AMOUNT</span>
+                                                <strong>
+                                                    {incoming ? "+" : direction === "out" ? "-" : ""}
+                                                    {formatCurrency(transaction.amount)}
+                                                </strong>
+                                            </div>
+                                        </article>
+                                    );
+                                })}
+                            </div>
+                        </>
                     )}
-
                 </section>
 
-
-                {/* =====================================
-                    SECURITY NOTICE
-                ===================================== */}
-
-                <section className="transaction-notice">
-
-                    <div className="notice-icon">
-                        🔐
+                <section className="transactions-security">
+                    <div className="security-icon">
+                        <ShieldCheck size={23} />
                     </div>
-
                     <div>
-
-                        <strong>
-                            Transaction Security
-                        </strong>
-
+                        <strong>Your banking security matters</strong>
                         <p>
-                            Always review your transaction
-                            details and never share your
-                            account password, PIN or
-                            verification code.
+                            Never share your password, transaction PIN or
+                            verification codes with anyone.
                         </p>
-
                     </div>
-
+                    <ShieldCheck className="security-watermark" size={70} />
                 </section>
-
-
-                {/* =====================================
-                    FOOTER
-                ===================================== */}
 
                 <footer className="transactions-footer">
-
-                    <span>
-                        © {new Date().getFullYear()}
-                        {" "}Richiee Bank
-                    </span>
-
+                    <span>© {new Date().getFullYear()} Skyravon Bank. All rights reserved.</span>
                     <div>
-
-                        <Link to="/dashboard">
-                            Dashboard
-                        </Link>
-
-                        <Link to="/profile">
-                            Profile
-                        </Link>
-
-                        <Link to="/support">
-                            Support
-                        </Link>
-
+                        <Link to="/dashboard">Dashboard</Link>
+                        <Link to="/profile">Profile</Link>
+                        <Link to="/support">Support</Link>
                     </div>
-
                 </footer>
 
             </main>
-
         </div>
     );
 }
-
 
 export default Transactions;
