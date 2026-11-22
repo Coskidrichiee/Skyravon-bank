@@ -34,21 +34,22 @@ const faqs = [
 function Support() {
     const [activeFaq, setActiveFaq] = useState(0);
 
-    // Load Tawk.to customer care chat
+    // Load Skyravon Bank Tawk.to Customer Support
     useEffect(() => {
+        window.Tawk_API = window.Tawk_API || {};
+        window.Tawk_LoadStart = new Date();
+
+        // Prevent duplicate script loading
         if (document.getElementById("tawkto-script")) {
             return;
         }
-
-        window.Tawk_API = window.Tawk_API || {};
-        window.Tawk_LoadStart = new Date();
 
         const script = document.createElement("script");
 
         script.id = "tawkto-script";
         script.async = true;
         script.src =
-            "https://embed.tawk.to/6aed59aff9eca33c2b219da0/1k6niclhg";
+            "https://embed.tawk.to/6b028f44cc54b13cd956b690/1k80vv90o";
         script.charset = "UTF-8";
         script.setAttribute("crossorigin", "*");
 
@@ -60,19 +61,17 @@ function Support() {
             document.head.appendChild(script);
         }
 
-        return () => {
-            // Keep the Tawk.to script loaded during SPA navigation.
-            // This prevents duplicate widget initialization.
-        };
+        // Keep Tawk.to loaded during SPA navigation
+        return () => {};
     }, []);
 
-    // Open the actual Tawk.to live chat
+    // Open Skyravon Bank live customer chat
     const openCustomerCareChat = () => {
         if (window.Tawk_API?.maximize) {
             window.Tawk_API.maximize();
         } else {
-            // Tawk.to may still be loading.
-            window.Tawk_API = window.Tawk_API || {};
+            // Chat widget may still be loading
+            console.log("Skyravon customer chat is loading. Please try again shortly.");
         }
     };
 
@@ -181,7 +180,7 @@ function Support() {
 
                     {/* Phone */}
                     <a
-                        href="tel:+2348001234567"
+                        href="tel:+421950207351"
                         className="support-contact-card"
                     >
                         <div className="support-contact-icon blue">
@@ -194,7 +193,7 @@ function Support() {
 
                         <h3>Phone Support</h3>
 
-                        <p>+234 800 123 4567</p>
+                        <p>+421 950 207 351</p>
 
                         <span className="support-contact-action">
                             Call now <span>↗</span>
@@ -203,7 +202,7 @@ function Support() {
 
                     {/* Email */}
                     <a
-                        href="mailto:customercare@skyravon.site.je"
+                        href="mailto:skyravoncustomercare@gmail.com"
                         className="support-contact-card"
                     >
                         <div className="support-contact-icon purple">
@@ -217,7 +216,7 @@ function Support() {
                         <h3>Email Support</h3>
 
                         <p>
-                            customercare@skyravon.site.je
+                            skyravoncustomercare@gmail.com
                         </p>
 
                         <span className="support-contact-action">
@@ -225,7 +224,7 @@ function Support() {
                         </span>
                     </a>
 
-                    {/* Tawk.to live chat */}
+                    {/* Live Chat */}
                     <button
                         type="button"
                         className="support-contact-card support-chat-card"
@@ -289,11 +288,11 @@ function Support() {
 
                     <span className="support-hours-status">
                         <span />
-                        Live chat available
+                        Live chat availability
                     </span>
                 </section>
 
-                {/* Frequently asked questions */}
+                {/* FAQs */}
                 <section className="support-faq-section">
 
                     <div className="support-faq-heading">
@@ -354,7 +353,7 @@ function Support() {
                         <strong>Stay safe while banking</strong>
 
                         <p>
-                            skyravon Bank will never ask you to disclose your
+                            Skyravon Bank will never ask you to disclose your
                             password, transaction PIN, CVV or one-time
                             verification code. Keep your banking information
                             private and report suspicious activity immediately.
